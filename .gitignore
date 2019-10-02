@@ -4,3 +4,5 @@
 *.a
 sifs_mkvolume
 sifs_dirinfo
+write_test.c
+write_test
