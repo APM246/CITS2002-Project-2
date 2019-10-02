@@ -1,0 +1,6 @@
+*.o
+*.json
+*.txt
+*.a
+sifs_mkvolume
+sifs_dirinfo
