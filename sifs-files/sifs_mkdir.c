@@ -4,7 +4,11 @@
 
 int main(int argc, char *argv[])
 {
-    SIFS_mkdir("okay", "dir1");
+    if (SIFS_mkdir(argv[1], argv[2]) != 0) 
+    {
+        SIFS_perror(NULL);
+        return 1;
+    }
 
     return 0;
 }
