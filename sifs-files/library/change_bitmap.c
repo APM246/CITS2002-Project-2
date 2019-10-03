@@ -5,6 +5,7 @@
 // WILL NEED TO CHANGE AS BITMAP IS NOT ALWAYS APPENDED TO. SOMETIMES BLOCKS WILL BECOME UNUSED
 // THUS CAN FILL UP 'u' BIT IN THE MIDDLE OF THE BITMAP
 // USE FOR LOOP AND STOP AT FIRST INSTANCE OF 'u'
+// OR fseek by 1 char each time, then fread() to see if char is 'u'
 void change_bitmap(const char *volumename, char SIFS_BIT)
 {
     FILE *fp = fopen(volumename, "r+");
