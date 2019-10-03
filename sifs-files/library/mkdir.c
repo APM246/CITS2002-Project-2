@@ -17,6 +17,13 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     strcpy(new_dir.name, dirname);
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
+
+    // CONVERT INTO FUNCTION AND ADD TO INTERNAL-SIFS.H. THIS FUNCTION WILL BE CALLED
+    // EVERYTIME A NEW BLOCK IS USED (DIR BLOCK, FILE BLOCK, FILES CONTENTS)
+    FILE *fp = fopen(volumename, "w");
+    //fseek(fp, , SEEK_SET);
+    
+
         
     //printf("\n%s\n", new_dir.name);
 

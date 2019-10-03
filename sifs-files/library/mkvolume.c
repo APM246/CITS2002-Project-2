@@ -55,7 +55,7 @@ int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks)
 //  WRITE ALL OF THE INITIALISED SECTIONS TO THE VOLUME
     fwrite(&header, sizeof header, 1, vol);
     fwrite(bitmap,  sizeof bitmap, 1, vol);
-
+    
     fwrite(oneblock, sizeof oneblock, 1, vol);	// write rootdir
     memset(oneblock, 0, sizeof oneblock);	// reset to all zeroes
     for(int b=1 ; b<nblocks ; ++b) {
