@@ -28,9 +28,16 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     // add bytes for each bit (use max size of block
     // for all 3 types of block since size is fixed for blocks (internal fragmentation)) until 'u' found
     // since size of bitmap not known, use SEEK_END and go backwards until first 'u' found
-    sizeof jump = sizeof SIFS_VOLUME_HEADER + sizeof 
-    fseek(fp, , SEEK_CUR)
+    //sizeof jump = sizeof SIFS_VOLUME_HEADER + sizeof 
+    
+    fseek(fp, -1024*99, SEEK_END);
 
+    char block[SIFS_MIN_BLOCKSIZE];
+    memset(block, 0, sizeof block);
+    memcpy(block, &new_dir, sizeof new_dir);
+    fwrite(block, sizeof block, 1, fp);
+
+    //fwrite(&new_dir, sizeof new_dir, 1, fp);
         
     //printf("\n%s\n", new_dir.name);
 
