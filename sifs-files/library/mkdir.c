@@ -17,9 +17,7 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     strcpy(new_dir.name, dirname);
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
-    
-    
-
+        
     //printf("\n%s\n", new_dir.name);
 
     return 0;
