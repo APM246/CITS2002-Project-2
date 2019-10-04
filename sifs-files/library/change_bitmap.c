@@ -6,12 +6,10 @@
 // THUS CAN FILL UP 'u' BIT IN THE MIDDLE OF THE BITMAP
 // USE FOR LOOP AND STOP AT FIRST INSTANCE OF 'u'
 // OR fseek by 1 char each time, then fread() to see if char is 'u'
-int change_bitmap(const char *volumename, char SIFS_BIT, int *blockID)
+int change_bitmap(const char *volumename, char SIFS_BIT, int *blockID, int nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
-    char buffer[sizeof(SIFS_VOLUME_HEADER)];
-    fread(buffer, sizeof(buffer), 1, fp);
-    int nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks;
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     char bit;
 
     for (int i = 0; i < nblocks; i++)

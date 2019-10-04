@@ -1,8 +1,7 @@
-#include "sifs-internal.h"
+#include "helperfunctions.h"
 #include <unistd.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include <stdio.h>
 
 // make a new directory within an existing volume
 int SIFS_mkdir(const char *volumename, const char *dirname)
@@ -19,20 +18,25 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
 
+    //obtain information about nblocks and blocksize
+    FILE *fp = fopen(volumename, "r+");
+    char buffer[sizeof(SIFS_VOLUME_HEADER)];
+    fread(buffer, sizeof(buffer), 1, fp);
+    // data type of int ok?
+    int nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks;
+    size_t blocksize = ((SIFS_VOLUME_HEADER *) buffer)->blocksize;
+
     // CHANGE FROM 'u' TO 'd'
     int blockID;
-    if (change_bitmap(volumename, SIFS_DIR, &blockID) != 0)
+    if (change_bitmap(volumename, SIFS_DIR, &blockID, nblocks) != 0)
     {
         SIFS_errno = SIFS_EMAXENTRY;
         return 1;
     }
     
-    FILE *fp = fopen(volumename, "r+");
-    // for all 3 types of block since size is fixed for blocks (internal fragmentation)) until 'u' found
-    // since size of bitmap not known, use SEEK_END and go backwards until first 'u' found
-    //sizeof jump = sizeof SIFS_VOLUME_HEADER + sizeof 
-    
-    fseek(fp, -1024*(100-blockID), SEEK_END);
+    printf("\nnblocks: %i, blocksize: %lu, blockID: %i\n", nblocks, blocksize, blockID);
+    //FILE *fp = fopen(volumename, "r+");
+    fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
         
     // ALSO: need to update entries[MAX_SIFS_ENTRIES] array (of parent directory)
