@@ -1,5 +1,5 @@
 
-HEADERS	= ../sifs.h sifs-internal.h md5.h
+HEADERS	= ../sifs.h sifs-internal.h md5.h helperfunctions.h
 LIBRARY	= libsifs.a
 
 OBJECTS	= mkvolume.o mkdir.o rmdir.o dirinfo.o\

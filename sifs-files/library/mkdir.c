@@ -22,8 +22,7 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     FILE *fp = fopen(volumename, "r+");
     char buffer[sizeof(SIFS_VOLUME_HEADER)];
     fread(buffer, sizeof(buffer), 1, fp);
-    // data type of int ok?
-    int nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks;
+    int nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks; // data type of int ok?
     size_t blocksize = ((SIFS_VOLUME_HEADER *) buffer)->blocksize;
 
     // CHANGE FROM 'u' TO 'd'
@@ -35,7 +34,6 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     }
     
     printf("\nnblocks: %i, blocksize: %lu, blockID: %i\n", nblocks, blocksize, blockID);
-    //FILE *fp = fopen(volumename, "r+");
     fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
         
@@ -44,16 +42,26 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     // maybe readbackwards and stop at first '/'. Pointer to parent directory, keep decrementing address
     // until another '/' is reached
     // modify nentries as well (below)
+    /* TWO WAYS: look at parent directory's parent directory's entries array in SIFS_dirblock and
+    find blockID whose corresponding name is the parent's directory. Then use that blockID to find
+    its block and update nentries and its own entries array. 
+    SECOND WAY: Note parent directory's name. Traverse bitmap for 'd' and look at corresponding 
+    name for the blockID. When name matches, update nentries and entries array. 
+    SECOND WAY LOOKS EASIEST. First way looks like repetition even though less array traversal.  
+    */ 
 
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + 100 + 1024; //+ 1024n where n is number of blocks away
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks; //+ 1024n where n is number of blocks away
     fseek(fp, jump, SEEK_SET);
-    char read[1024];
-    fread(&read, sizeof(read), 1, fp);
+    char read[blocksize];
+    fread(read, sizeof(read), 1, fp);
     SIFS_DIRBLOCK *ptr = (SIFS_DIRBLOCK *) read;
-    printf("\n%s\n", ptr->name);
-    //read++;
-    //fseek(fp, -sizeof(read), SEEK_CUR);
-    //fwrite(&read, sizeof(read), 1, fp);
+    //printf("\n%i\n", (*ptr).nentries);
+    ptr->nentries = 1;
+    fseek(fp, jump, SEEK_SET);
+    memset(fp, 0, sizeof(read));
+    fseek(fp, jump, SEEK_SET);
+    fwrite(ptr, sizeof(read), 1, fp);
+    fclose(fp);
 
     return 0; 
 }
