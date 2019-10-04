@@ -16,7 +16,7 @@
 
 #define SIFS_ROOTDIR_BLOCKID	0
 
-extern void change_bitmap(const char *volumename, char SIFS_BIT);
+extern int change_bitmap(const char *volumename, char SIFS_BIT, int *blockID);
 
 typedef struct {
     size_t		blocksize;
