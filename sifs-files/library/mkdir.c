@@ -34,11 +34,6 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
 
     // NEED TO ASK HELP2002 WHETHER NEED TO FORMAT IN CHAR ARRAY BEFORE FWRITE()
     // OR JUST IMMEDIATELY PASS ADDRESS OF STRUCT 
-    /*char block[SIFS_MIN_BLOCKSIZE];
-    memset(block, 0, sizeof block);
-    memcpy(block, &new_dir, sizeof new_dir);
-    fwrite(block, sizeof block, 1, fp);*/
-
     fwrite(&new_dir, sizeof new_dir, 1, fp);
         
     // ALSO: need to update entries[MAX_SIFS_ENTRIES] array (of parent directory)
@@ -47,15 +42,17 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     // until another '/' is reached
 
     // modify nentries as well (below)
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + 100 + sizeof(SIFS_MAX_NAME_LENGTH) + sizeof(time_t);
-    // + sizeof(uint32_t)
+    //size_t jump = sizeof(SIFS_VOLUME_HEADER) + 100 + sizeof(SIFS_MAX_NAME_LENGTH) + sizeof(time_t);
+    //size_t wtf = sizeof(SIFS_VOLUME_HEADER->blocksize)); FIX
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + 100 + 1024;
     fseek(fp, jump, SEEK_SET);
-    char read[1];
-    fread(read, 1, 1, fp);
-    //printf("\n%i\n", atoi(read));
-    read[0]++;
-    fseek(fp, -1, SEEK_CUR);
-    fwrite(read, 1, 1, fp);
+    char read[1024];
+    fread(&read, sizeof(read), 1, fp);
+    SIFS_DIRBLOCK *ptr = (SIFS_DIRBLOCK *) read;
+    printf("\n%s\n", ptr->name);
+    //read++;
+    //fseek(fp, -sizeof(read), SEEK_CUR);
+    //fwrite(&read, sizeof(read), 1, fp);
 
     return 0; 
 }
