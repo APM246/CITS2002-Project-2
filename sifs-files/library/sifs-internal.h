@@ -1,5 +1,6 @@
 #include "../sifs.h"
 #include "md5.h"
+#include <assert.h>
 
 //  CONCRETE STRUCTURES AND CONSTANTS USED THROUGHOUT THE SIFS LIBRARY.
 //  DO NOT CHANGE ANYTHING IN THIS FILE.

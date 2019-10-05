@@ -33,15 +33,12 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
         return 1;
     }
     
-    printf("\nnblocks: %i, blocksize: %lu, blockID: %i\n", nblocks, blocksize, blockID);
     fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
         
-    // ALSO: need to update entries[MAX_SIFS_ENTRIES] array (of parent directory)
     // need helper function that breaks down pathname (removes / and shows where entries array is stored)
     // maybe readbackwards and stop at first '/'. Pointer to parent directory, keep decrementing address
     // until another '/' is reached
-    // modify nentries as well (below)
     /* TWO WAYS: look at parent directory's parent directory's entries array in SIFS_dirblock and
     find blockID whose corresponding name is the parent's directory. Then use that blockID to find
     its block and update nentries and its own entries array. 
@@ -49,20 +46,15 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     name for the blockID. When name matches, update nentries and entries array. 
     SECOND WAY LOOKS EASIEST. First way looks like repetition even though less array traversal.  
     */ 
-
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks; //+ 1024n where n is number of blocks away
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT); 
     fseek(fp, jump, SEEK_SET);
-    char read[blocksize];
-    fread(read, sizeof(read), 1, fp);
-    SIFS_DIRBLOCK *ptr = (SIFS_DIRBLOCK *) read;
-    //printf("\n%i\n", (*ptr).nentries);
-    ptr->nentries = 1;
+    SIFS_DIRBLOCK dir;
+    fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
+    dir.nentries++;
+    dir.entries[0].blockID = 1;
     fseek(fp, jump, SEEK_SET);
-    memset(fp, 0, sizeof(read));
-    fseek(fp, jump, SEEK_SET);
-    fwrite(ptr, sizeof(read), 1, fp);
+    fwrite(&dir, sizeof dir, 1, fp);
     fclose(fp);
 
     return 0; 
 }
-
