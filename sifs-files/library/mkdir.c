@@ -50,8 +50,8 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
+    dir.entries[dir.nentries].blockID = blockID;
     dir.nentries++;
-    dir.entries[0].blockID = 1;
     fseek(fp, jump, SEEK_SET);
     fwrite(&dir, sizeof dir, 1, fp);
     fclose(fp);

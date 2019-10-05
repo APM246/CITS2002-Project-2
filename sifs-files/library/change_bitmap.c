@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include "sifs-internal.h" 
 
-// WILL NEED TO CHANGE AS BITMAP IS NOT ALWAYS APPENDED TO. SOMETIMES BLOCKS WILL BECOME UNUSED
-// THUS CAN FILL UP 'u' BIT IN THE MIDDLE OF THE BITMAP
-// USE FOR LOOP AND STOP AT FIRST INSTANCE OF 'u'
-// OR fseek by 1 char each time, then fread() to see if char is 'u'
+// add 1 more parameter: file pointer, avoids repetition. 
 int change_bitmap(const char *volumename, char SIFS_BIT, int *blockID, int nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
