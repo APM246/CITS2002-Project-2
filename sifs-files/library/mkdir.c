@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 // make a new directory within an existing volume
-int SIFS_mkdir(const char *volumename, const char *dirname)
+int SIFS_mkdir(const char *volumename, const char *pathname)
 {
     if (access(volumename, F_OK) != 0)
     {
@@ -12,9 +12,20 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
         return 1;
     }
 
+    // EXTRACT DIRECTORY NAME 
+    char *directory_name = malloc(SIFS_MAX_NAME_LENGTH);
+    strcpy(directory_name, pathname);
+    char delimiter[] = "/";   // DEFINE IN SIFS-INTERNAL
+    int number_of_slashes = get_number_of_slashes(pathname);
+    directory_name = strtok(directory_name, delimiter);
+    for (int i = 0; i < number_of_slashes; i++)
+    {
+        directory_name = strtok(NULL, delimiter);
+    }
+
     // CREATE THE NEW DIRECTORY BLOCK
     SIFS_DIRBLOCK new_dir; 
-    strcpy(new_dir.name, dirname);
+    strcpy(new_dir.name, directory_name);    // NEED TO REMOVE SUPER DIRECTORIES FROM NAME USING STRCHR() (points to last occurrence of '/')
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
 
@@ -35,15 +46,9 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     
     fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
-        
-    // need helper function that breaks down pathname (removes / and shows where entries array is stored)
-    // maybe readbackwards and stop at first '/'. Pointer to parent directory, keep decrementing address
-    // until another '/' is reached
-    /* look at parent directory's parent directory's entries array in SIFS_dirblock and
-    find blockID whose corresponding name is the parent's directory. Then use that blockID to find
-    its block and update nentries and its own entries array. */
 
-    int parent_blockID = find_parent_blockID(volumename, dirname, nblocks, blocksize);
+    // UPDATE ENTRIES AND NENTRIES OF PARENT DIRECTORY 
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; // use macro
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;
@@ -54,7 +59,9 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     fwrite(&dir, sizeof dir, 1, fp);
     fclose(fp);
 
-    //throw error if directory already exists 
+    //throw error if directory already exists
+    // find_parent_blockID needs to throw errors, etc.  
+    // if directory name too long 
 
     return 0; 
 }
