@@ -43,7 +43,8 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     find blockID whose corresponding name is the parent's directory. Then use that blockID to find
     its block and update nentries and its own entries array. */
 
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT); 
+    int parent_blockID = find_parent_blockID(volumename, dirname, nblocks, blocksize);
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; // use macro
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);

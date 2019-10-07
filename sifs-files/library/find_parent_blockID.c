@@ -3,25 +3,45 @@
 #include <stdlib.h>
 #include <string.h>
 
-int find_parent_blockID(char *volumename, char *pathname, int nblocks)
+// can't write to an uninitialised pointer (e.g. in strcpy())
+int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
+    char path_name[SIFS_MAX_NAME_LENGTH];
+    //char *path_name = malloc(strlen(pathname) + 1); 
+    strcpy(path_name, pathname);
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT), SEEK_SET);
-    char *path = strtok(pathname, "/");
-    SIFS_DIRBLOCK buffer;
-    while ()
+
+    char *path;
+    int parent_blockID = 0;
+    SIFS_DIRBLOCK parent_buffer;
+    int child_blockID;
+    SIFS_DIRBLOCK child_buffer;
+    char delimiter[] = "/"; //check which direction
+
+    path = strtok(path_name, delimiter);
+    
+
+    do
     {
-        int temp_blockID;
-        fread(&buffer, sizeof(buffer), 1, fp);
+        fread(&parent_buffer, sizeof(parent_buffer), 1, fp);
         for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
         {
-            temp_blockID = buffer.entries[i].blockID;
-            //fread that blockID and check its name to see if it matches. 
+            child_blockID = parent_buffer.entries[i].blockID;
+            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + child_blockID*blocksize, SEEK_SET);
+            fread(&child_buffer, sizeof(child_buffer), 1, fp);
+            if (strcmp(child_buffer.name, path) == 0) 
+            {
+                parent_blockID = child_blockID;
+                fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+                memset(&parent_buffer, 0, sizeof(parent_buffer));
+                break;
+            }    
         }
-
     }
+    while ((path = strtok(NULL, delimiter)) != NULL);
 
-
-    return 0;
+    // search failed, does not exist 
+    return parent_blockID;
 }
 
