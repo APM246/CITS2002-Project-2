@@ -13,19 +13,27 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     }
 
     // EXTRACT DIRECTORY NAME 
-    char *directory_name = malloc(SIFS_MAX_NAME_LENGTH);
-    strcpy(directory_name, pathname);
-    char delimiter[] = "/";   // DEFINE IN SIFS-INTERNAL
-    int number_of_slashes = get_number_of_slashes(pathname);
-    directory_name = strtok(directory_name, delimiter);
-    for (int i = 0; i < number_of_slashes; i++)
+    char *directory_name;
+    if ((directory_name = strrchr(pathname, '/')) != NULL)
     {
-        directory_name = strtok(NULL, delimiter);
+        directory_name++; // move one char past '/'
     }
+    else
+    {
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH + 1);
+        strcpy(directory_name, pathname);
+    }
+    
+    // THROW ERROR IF NAME IS TOO LONG 
+    if ((strlen(directory_name) + 1) > SIFS_MAX_NAME_LENGTH)
+    {
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    } 
 
     // CREATE THE NEW DIRECTORY BLOCK
     SIFS_DIRBLOCK new_dir; 
-    strcpy(new_dir.name, directory_name);    // NEED TO REMOVE SUPER DIRECTORIES FROM NAME USING STRCHR() (points to last occurrence of '/')
+    strcpy(new_dir.name, directory_name);   
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
 
@@ -61,7 +69,6 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     //throw error if directory already exists
     // find_parent_blockID needs to throw errors, etc.  
-    // if directory name too long 
 
     return 0; 
 }

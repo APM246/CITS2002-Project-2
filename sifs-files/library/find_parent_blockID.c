@@ -17,9 +17,8 @@ int get_number_of_slashes(const char* pathname)
     return number;
 }
 
-// can't write to an uninitialised pointer (e.g. in strcpy())
-// path and child_buffer.name don't ever agree unless entry in root
-// function to find number of slashes 
+// can't write to an uninitialised pointer (e.g. in strcpy()) but other functions don't need to malloc (e.g strrchr, pointer points to already
+// allocated memory or handles malloc() itself)
 int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char path_name[SIFS_MAX_NAME_LENGTH];
