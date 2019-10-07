@@ -39,13 +39,10 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     // need helper function that breaks down pathname (removes / and shows where entries array is stored)
     // maybe readbackwards and stop at first '/'. Pointer to parent directory, keep decrementing address
     // until another '/' is reached
-    /* TWO WAYS: look at parent directory's parent directory's entries array in SIFS_dirblock and
+    /* look at parent directory's parent directory's entries array in SIFS_dirblock and
     find blockID whose corresponding name is the parent's directory. Then use that blockID to find
-    its block and update nentries and its own entries array. 
-    SECOND WAY: Note parent directory's name. Traverse bitmap for 'd' and look at corresponding 
-    name for the blockID. When name matches, update nentries and entries array. 
-    SECOND WAY LOOKS EASIEST. First way looks like repetition even though less array traversal.  
-    */ 
+    its block and update nentries and its own entries array. */
+
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT); 
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;
@@ -55,6 +52,8 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     fseek(fp, jump, SEEK_SET);
     fwrite(&dir, sizeof dir, 1, fp);
     fclose(fp);
+
+    //throw error if directory already exists 
 
     return 0; 
 }
