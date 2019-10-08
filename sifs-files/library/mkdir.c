@@ -39,10 +39,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     //obtain information about nblocks and blocksize
     FILE *fp = fopen(volumename, "r+");
-    char buffer[sizeof(SIFS_VOLUME_HEADER)];
-    fread(buffer, sizeof(buffer), 1, fp);
-    int nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks; // data type of int ok?
-    size_t blocksize = ((SIFS_VOLUME_HEADER *) buffer)->blocksize;
+    int blocksize, nblocks;
+    get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // CHANGE FROM 'u' TO 'd'
     int blockID;

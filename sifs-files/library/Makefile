@@ -4,7 +4,8 @@ LIBRARY	= libsifs.a
 
 OBJECTS	= mkvolume.o mkdir.o rmdir.o dirinfo.o\
 		writefile.o readfile.o rmfile.o fileinfo.o\
-		perror.o md5.o change_bitmap.o find_parent_blockID.o
+		perror.o md5.o change_bitmap.o find_parent_blockID.o\
+		get_volume_header_info.o
 
 CC      = cc
 CFLAGS  = -std=c99 -Wall -Werror -pedantic
