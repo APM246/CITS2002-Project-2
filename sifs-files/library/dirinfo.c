@@ -9,10 +9,10 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
 {
     int blocksize, nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
-    printf("\n%i\n", parent_blockID);
+    int blockID;
+    if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) return 1;
     FILE *fp = fopen(volumename, "r+");
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     *nentries = dirblock.nentries;

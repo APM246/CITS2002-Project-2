@@ -63,3 +63,61 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     // search failed, does not exist 
     return parent_blockID;
 }
+
+// read bitmap through this function as well, add extra paramter 
+int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
+{
+    char *directory_name;
+    if ((directory_name = strrchr(pathname, '/')) != NULL)
+    {
+        directory_name++; // move one char past '/'
+    }
+    else
+    {
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH + 1);
+        strcpy(directory_name, pathname);
+    }
+
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    FILE *fp = fopen(volumename, "r+");
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    SIFS_DIRBLOCK parent_dirblock; 
+    fread(&parent_dirblock, sizeof(parent_dirblock), 1, fp);
+    int nentries = parent_dirblock.nentries;
+    for (int i = 0; i < nentries; i++)
+    {
+        int entry_blockID = parent_dirblock.entries[i].blockID;
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+        char bitmap[nblocks]; 
+        fread(bitmap, sizeof(bitmap), 1, fp);
+        SIFS_BIT type = bitmap[entry_blockID];
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + entry_blockID*blocksize, SEEK_SET);
+        
+        if (type == SIFS_DIR)
+        {
+            SIFS_DIRBLOCK entry_dirblock;
+            fread(&entry_dirblock, sizeof(entry_dirblock), 1, fp);
+            if (strcmp(entry_dirblock.name, directory_name) == 0) 
+            {
+                
+                return entry_blockID;
+            }
+        }
+
+        else if (type == SIFS_FILE)
+        {
+            SIFS_FILEBLOCK entry_file;
+            int index = parent_dirblock.entries[i].fileindex;
+            fread(&entry_file, sizeof(entry_file), 1, fp);
+            if (strcmp(entry_file.filenames[index], directory_name) == 0)
+            {
+                // add bitmap parameter assignment via pointer 
+                return entry_blockID;
+            }
+        }
+    }
+
+    // can't find file/directory
+    SIFS_errno = SIFS_ENOENT;
+    return -1;
+}
