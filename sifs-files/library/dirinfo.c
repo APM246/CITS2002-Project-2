@@ -10,6 +10,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     int blocksize, nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);
     int blockID;
+    // NO SUCH FILE OR DIRECTORY EXISTS 
     if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) return 1;
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);

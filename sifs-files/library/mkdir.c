@@ -6,6 +6,7 @@
 // make a new directory within an existing volume
 int SIFS_mkdir(const char *volumename, const char *pathname)
 {
+    // NO SUCH VOLUME 
     if (access(volumename, F_OK) != 0)
     {
         SIFS_errno	= SIFS_ENOVOL;
@@ -21,6 +22,17 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_EINVAL;
         return 1;
     } 
+    
+    //obtain information about nblocks and blocksize
+    int blocksize, nblocks;
+    get_volume_header_info(volumename, &blocksize, &nblocks);
+
+    // DIRECTORY WITH THAT NAME ALREADY EXISTS 
+    if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
+    {
+        SIFS_errno = SIFS_EEXIST;
+        return 1;
+    }
 
     // CREATE THE NEW DIRECTORY BLOCK
     SIFS_DIRBLOCK new_dir; 
@@ -28,12 +40,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
 
-    //obtain information about nblocks and blocksize
-    FILE *fp = fopen(volumename, "r+");
-    int blocksize, nblocks;
-    get_volume_header_info(volumename, &blocksize, &nblocks);
-
-    // CHANGE FROM 'u' TO 'd'
+    // CHANGE FROM 'u' TO 'd'. THROW ERROR IF NOT ENOUGH SPACE
     int blockID;
     if (change_bitmap(volumename, SIFS_DIR, &blockID, nblocks) != 0)
     {
@@ -41,6 +48,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         return 1;
     }
     
+    // WRITE DIRECTORY BLOCK TO VOLUME 
+    FILE *fp = fopen(volumename, "r+");
     fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
 
