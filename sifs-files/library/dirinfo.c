@@ -18,14 +18,12 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     *nentries = dirblock.nentries;
     *modtime = dirblock.modtime;
 
-    assert(dirblock.entries[0].fileindex == 0);
-
-    entrynames = malloc(sizeof(char **));
-    *entrynames = malloc(sizeof(char *)*(*nentries));
+    //entrynames = malloc(sizeof(char **));
+    char **local_entrynames = NULL;
+    local_entrynames = malloc(sizeof(char *)*(*nentries));
     for (int i = 0; i < *nentries; i++)
     {
-        **entrynames = malloc(SIFS_MAX_NAME_LENGTH);
-        (*entrynames)++;
+        local_entrynames[i] = malloc(SIFS_MAX_NAME_LENGTH);
     }
 
     for (int i = 0; i < *nentries; i++)
@@ -33,7 +31,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         int entry_ID = dirblock.entries[i].blockID;
         fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
         char bitmap[1000]; //fix
-        fread(bitmap, nblocks, 1, fp);
+        fread(bitmap, 1000, 1, fp);
         SIFS_BIT bit = bitmap[entry_ID];
         fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + entry_ID*blocksize, SEEK_SET);
         
@@ -41,18 +39,18 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         {
             SIFS_DIRBLOCK entry_dirblock;
             fread(&entry_dirblock, sizeof(entry_dirblock), 1, fp);
-            strcpy(**entrynames, entry_dirblock.name);
+            strcpy(local_entrynames[i], entry_dirblock.name);
         }
         else if (bit == SIFS_FILE)
         {
             int file_index = dirblock.entries[i].fileindex;
             SIFS_FILEBLOCK entry_fileblock;
             fread(&entry_fileblock, sizeof(entry_fileblock), 1, fp);
-            strcpy(**entrynames, entry_fileblock.filenames[file_index]);
+            strcpy(local_entrynames[i], entry_fileblock.filenames[file_index]);
         }
-        (*entrynames)++;
     }
 
+    *entrynames = local_entrynames;
     fclose(fp);
     return 0;
 }
