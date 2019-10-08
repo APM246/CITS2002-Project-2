@@ -9,16 +9,15 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
 {
     int blocksize, nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);
-    int blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
-
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    printf("\n%i\n", parent_blockID);
     FILE *fp = fopen(volumename, "r+");
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     *nentries = dirblock.nentries;
     *modtime = dirblock.modtime;
 
-    //entrynames = malloc(sizeof(char **));
     char **local_entrynames = NULL;
     local_entrynames = malloc(sizeof(char *)*(*nentries));
     for (int i = 0; i < *nentries; i++)
@@ -30,8 +29,8 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     {
         int entry_ID = dirblock.entries[i].blockID;
         fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
-        char bitmap[1000]; //fix
-        fread(bitmap, 1000, 1, fp);
+        char bitmap[nblocks]; 
+        fread(bitmap, sizeof(bitmap), 1, fp);
         SIFS_BIT bit = bitmap[entry_ID];
         fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + entry_ID*blocksize, SEEK_SET);
         

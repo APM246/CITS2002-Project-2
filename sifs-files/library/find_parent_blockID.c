@@ -5,7 +5,7 @@
 
 int get_number_of_slashes(const char* pathname)
 {
-    char *path_name = malloc(sizeof(pathname));
+    char *path_name = malloc(sizeof(pathname) + 1);
     strcpy(path_name, pathname);
     int number = 0;
     char delimiter[] = "/";
@@ -22,8 +22,7 @@ int get_number_of_slashes(const char* pathname)
 // weirdly a double pointer is used for the address of a single pointer, triple pointer for double pointer, etc.
 int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
-    char path_name[SIFS_MAX_NAME_LENGTH];
-    //char *path_name = malloc(strlen(pathname) + 1); 
+    char path_name[SIFS_MAX_NAME_LENGTH]; 
     strcpy(path_name, pathname);
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT), SEEK_SET);

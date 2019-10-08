@@ -7,6 +7,7 @@ sifs_dirinfo
 write_test.c
 write_test
 okay
+okayvolume
 sifs_mkdir
 sifs_rmdir
 sample volumes
