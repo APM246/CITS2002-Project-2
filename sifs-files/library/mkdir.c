@@ -13,16 +13,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     }
 
     // EXTRACT DIRECTORY NAME 
-    char *directory_name;
-    if ((directory_name = strrchr(pathname, '/')) != NULL)
-    {
-        directory_name++; // move one char past '/'
-    }
-    else
-    {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH + 1);
-        strcpy(directory_name, pathname);
-    }
+    char *directory_name = find_name(pathname);
     
     // THROW ERROR IF NAME IS TOO LONG 
     if ((strlen(directory_name) + 1) > SIFS_MAX_NAME_LENGTH)
@@ -53,7 +44,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
 
-    // UPDATE ENTRIES AND NENTRIES OF PARENT DIRECTORY 
+    // UPDATE MODTIME, ENTRIES AND NENTRIES OF PARENT DIRECTORY 
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; // use macro
     fseek(fp, jump, SEEK_SET);
@@ -61,6 +52,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
     dir.entries[dir.nentries].blockID = blockID;
     dir.nentries++;
+    dir.modtime = time(NULL);
     fseek(fp, jump, SEEK_SET);
     fwrite(&dir, sizeof dir, 1, fp);
     fclose(fp);

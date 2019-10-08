@@ -3,6 +3,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+//  EXTRACT NAME (REMOVE SUPER DIRECTORIES FROM NAME)
+char *find_name(const char *pathname)
+{
+    char *directory_name;
+    if ((directory_name = strrchr(pathname, '/')) != NULL)
+    {
+        directory_name++; // move one char past '/'
+    }
+    else
+    {
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH + 1);
+        strcpy(directory_name, pathname);
+    }
+    return directory_name;
+}
+
 int get_number_of_slashes(const char* pathname)
 {
     char *path_name = malloc(sizeof(pathname));
@@ -67,23 +83,14 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 // read bitmap through this function as well, add extra paramter 
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
-    char *directory_name;
-    if ((directory_name = strrchr(pathname, '/')) != NULL)
-    {
-        directory_name++; // move one char past '/'
-    }
-    else
-    {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH + 1);
-        strcpy(directory_name, pathname);
-    }
-
+    char *directory_name = find_name(pathname);
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK parent_dirblock; 
     fread(&parent_dirblock, sizeof(parent_dirblock), 1, fp);
     int nentries = parent_dirblock.nentries;
+
     for (int i = 0; i < nentries; i++)
     {
         int entry_blockID = parent_dirblock.entries[i].blockID;
