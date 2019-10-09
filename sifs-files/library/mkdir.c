@@ -41,8 +41,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     new_dir.nentries = 0;
 
     // CHANGE FROM 'u' TO 'd'. THROW ERROR IF NOT ENOUGH SPACE
-    SIFS_BLOCKID blockID;
-    if (change_bitmap(volumename, SIFS_DIR, &blockID, nblocks) != 0)
+    SIFS_BLOCKID block_ID;
+    if (change_bitmap(volumename, SIFS_DIR, &block_ID, nblocks) != 0)
     {
         SIFS_errno = SIFS_EMAXENTRY;
         return 1;
@@ -50,7 +50,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     
     // WRITE DIRECTORY BLOCK TO VOLUME 
     FILE *fp = fopen(volumename, "r+");
-    fseek(fp, -blocksize*(nblocks-blockID), SEEK_END);
+    fseek(fp, -blocksize*(nblocks-block_ID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
 
     // UPDATE MODTIME, ENTRIES AND NENTRIES OF PARENT DIRECTORY 
@@ -59,7 +59,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
-    dir.entries[dir.nentries].blockID = blockID; //needs fixing
+    dir.entries[dir.nentries].blockID = block_ID; // needs fixing, fill up empty spots instead of appending
     dir.nentries++;
     dir.modtime = time(NULL);
     fseek(fp, jump, SEEK_SET);
