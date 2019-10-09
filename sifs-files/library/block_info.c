@@ -36,7 +36,7 @@ int get_number_of_slashes(const char* pathname)
 // can't write to an uninitialised pointer (e.g. in strcpy()) but other functions don't need to malloc (e.g strrchr, pointer points to already
 // allocated memory or handles malloc() itself) (exception initialise to NULL?)
 // weirdly a double pointer is used for the address of a single pointer, triple pointer for double pointer, etc.
-SIFS_BLOCKID find_parent_blockID(const char *volumename, const char *pathname, uint32_t nblocks, int blocksize)
+SIFS_BLOCKID find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     int max_iterations;
     if ((max_iterations = get_number_of_slashes(pathname)) == 0) return 0;
@@ -80,7 +80,7 @@ SIFS_BLOCKID find_parent_blockID(const char *volumename, const char *pathname, u
 }
 
 // read bitmap through this function as well, add extra paramter 
-SIFS_BLOCKID find_blockID(const char *volumename, const char *pathname, uint32_t nblocks, int blocksize)
+SIFS_BLOCKID find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char *directory_name = find_name(pathname);
     SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void get_volume_header_info(const char *volumename, int *blocksize, uint32_t *nblocks)
+void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
     char buffer[sizeof(SIFS_VOLUME_HEADER)];
