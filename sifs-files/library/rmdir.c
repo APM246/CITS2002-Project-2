@@ -11,7 +11,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     FILE *fp = fopen(volumename, "r+");
     int nblocks, blocksize;
     get_volume_header_info(volumename, &blocksize, &nblocks);
-    SIFS_BLOCKID blockID = find_blockID(volumename, pathname, nblocks, blocksize);
+    int blockID = find_blockID(volumename, pathname, nblocks, blocksize);
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     char bitmap[nblocks];
     fread(bitmap, sizeof(bitmap), 1, fp);
@@ -41,26 +41,30 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     bitmap[blockID] = SIFS_UNUSED;
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fwrite(bitmap, sizeof(bitmap), 1, fp);
+
+    //printf("\n%c\n", blockID);
     
-    // clear memory
+    // clear directory block from volume 
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
     memset(&dirblock, 0, sizeof(dirblock));
     fwrite(&dirblock, sizeof(dirblock), 1, fp);
 
     // update 3 fields of parent directory 
     SIFS_DIRBLOCK parentblock;
-    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     fread(&parentblock, sizeof(parentblock), 1, fp);
+    for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
+    {
+        if (parentblock.entries[i].blockID == blockID)
+        {
+            parentblock.entries[i].blockID = 0;
+            parentblock.entries[i].fileindex = 0;
+            break;
+        }
+    }
     parentblock.nentries--;
     parentblock.modtime = time(NULL);
-
-    /*for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
-    {
-        //if ()
-    }*/
-    // TEMPORARY JUST TO TEST (should be done in for loop above)
-    parentblock.entries[0].blockID = 0;
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     fwrite(&parentblock, sizeof(parentblock), 1, fp);
 
