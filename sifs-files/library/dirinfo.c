@@ -7,12 +7,15 @@
 int SIFS_dirinfo(const char *volumename, const char *pathname,
                  char ***entrynames, uint32_t *nentries, time_t *modtime)
 {
-    int blocksize, nblocks;
-    SIFS_BLOCKID blockID;
+    int blocksize, nblocks, blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // NO SUCH FILE OR DIRECTORY EXISTS 
-    if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) return 1;
+    if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) 
+    {
+        SIFS_errno = SIFS_ENOENT;
+        return 1;
+    }
 
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
@@ -30,7 +33,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
 
     for (int i = 0; i < *nentries; i++)
     {
-        SIFS_BLOCKID entry_ID = dirblock.entries[i].blockID;
+        int entry_ID = dirblock.entries[i].blockID;
         //if (entry_ID == 0) continue; //empty 
         fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
         char bitmap[nblocks]; 

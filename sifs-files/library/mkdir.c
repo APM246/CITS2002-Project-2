@@ -41,7 +41,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     new_dir.nentries = 0;
 
     // CHANGE FROM 'u' TO 'd'. THROW ERROR IF NOT ENOUGH SPACE
-    SIFS_BLOCKID block_ID;
+    int block_ID;
     if (change_bitmap(volumename, SIFS_DIR, &block_ID, nblocks) != 0)
     {
         SIFS_errno = SIFS_EMAXENTRY;
@@ -54,7 +54,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     fwrite(&new_dir, sizeof new_dir, 1, fp);
 
     // UPDATE MODTIME, ENTRIES AND NENTRIES OF PARENT DIRECTORY 
-    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; // use macro
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;

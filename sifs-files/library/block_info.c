@@ -36,7 +36,7 @@ int get_number_of_slashes(const char* pathname)
 // can't write to an uninitialised pointer (e.g. in strcpy()) but other functions don't need to malloc (e.g strrchr, pointer points to already
 // allocated memory or handles malloc() itself) (exception initialise to NULL?)
 // weirdly a double pointer is used for the address of a single pointer, triple pointer for double pointer, etc.
-SIFS_BLOCKID find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
+int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     int max_iterations;
     if ((max_iterations = get_number_of_slashes(pathname)) == 0) return 0;
@@ -46,9 +46,9 @@ SIFS_BLOCKID find_parent_blockID(const char *volumename, const char *pathname, i
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT), SEEK_SET);
 
     char *path;
-    SIFS_BLOCKID parent_blockID = 0;
+    int parent_blockID = 0;
     SIFS_DIRBLOCK parent_buffer;
-    SIFS_BLOCKID child_blockID;
+    int child_blockID;
     SIFS_DIRBLOCK child_buffer;
     char delimiter[] = "/"; 
     int n_iterations = 0;
@@ -75,15 +75,15 @@ SIFS_BLOCKID find_parent_blockID(const char *volumename, const char *pathname, i
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
- 
+
     return parent_blockID;
 }
 
 // read bitmap through this function as well, add extra paramter 
-SIFS_BLOCKID find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
+int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char *directory_name = find_name(pathname);
-    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK parent_dirblock; 
@@ -92,7 +92,7 @@ SIFS_BLOCKID find_blockID(const char *volumename, const char *pathname, int nblo
 
     for (int i = 0; i < nentries; i++)
     {
-        SIFS_BLOCKID entry_blockID = parent_dirblock.entries[i].blockID;
+        int entry_blockID = parent_dirblock.entries[i].blockID;
         fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
         char bitmap[nblocks]; 
         fread(bitmap, sizeof(bitmap), 1, fp);
@@ -123,7 +123,5 @@ SIFS_BLOCKID find_blockID(const char *volumename, const char *pathname, int nblo
         }
     }
 
-    // can't find file/directory
-    SIFS_errno = SIFS_ENOENT;
     return -1;
 }
