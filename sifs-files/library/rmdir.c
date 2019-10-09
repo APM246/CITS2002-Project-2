@@ -8,6 +8,13 @@
 // remove an existing directory from an existing volume
 int SIFS_rmdir(const char *volumename, const char *pathname)
 {
+    // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
+    if (strlen(pathname) == 1 && *pathname == '/')
+    {
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
     FILE *fp = fopen(volumename, "r+");
     int nblocks, blocksize;
     get_volume_header_info(volumename, &blocksize, &nblocks);
@@ -16,13 +23,6 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     char bitmap[nblocks];
     fread(bitmap, sizeof(bitmap), 1, fp);
     SIFS_BIT type = bitmap[blockID];
-
-    // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
-    if (strlen(pathname) == 1 && *pathname == '/')
-    {
-        SIFS_errno = SIFS_EINVAL;
-        return 1;
-    }
 
     // THROW ERROR IF PATHNAME IS NOT A DIRECTORY
     if (type != SIFS_DIR)
