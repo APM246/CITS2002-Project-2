@@ -64,10 +64,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     dir.modtime = time(NULL);
     fseek(fp, jump, SEEK_SET);
     fwrite(&dir, sizeof dir, 1, fp);
-    fclose(fp);
-
-    //throw error if directory already exists
-    // find_parent_blockID needs to throw errors, etc.  
+    fclose(fp); 
 
     return 0; 
 }

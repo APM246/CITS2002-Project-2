@@ -57,11 +57,11 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
 
     for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
     {
-        if ()
+        //if ()
     }
     //parentblock.entries.
 
-
+    fclose(fp);
     return 0;
 }
 
