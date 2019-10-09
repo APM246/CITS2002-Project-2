@@ -17,6 +17,13 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     fread(bitmap, sizeof(bitmap), 1, fp);
     SIFS_BIT type = bitmap[blockID];
 
+    // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
+    if (strlen(pathname) == 1 && *pathname == '/')
+    {
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
     // THROW ERROR IF PATHNAME IS NOT A DIRECTORY
     if (type != SIFS_DIR)
     {

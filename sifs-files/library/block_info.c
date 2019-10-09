@@ -40,8 +40,14 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 {
     int max_iterations;
     if ((max_iterations = get_number_of_slashes(pathname)) == 0) return 0;
-    char path_name[SIFS_MAX_NAME_LENGTH]; 
+    char *path_name = malloc(SIFS_MAX_NAME_LENGTH); 
     strcpy(path_name, pathname);
+    if (*pathname == '/')
+    {
+        if (strlen(pathname) == 1) return 0; // pathname provided is the root directory 
+        else path_name++; //skip past first '/'
+    }
+
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT), SEEK_SET);
 
@@ -82,6 +88,8 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 // read bitmap through this function as well, add extra paramter 
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
+
+
     char *directory_name = find_name(pathname);
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     FILE *fp = fopen(volumename, "r+");

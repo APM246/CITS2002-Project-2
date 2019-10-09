@@ -16,8 +16,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     // EXTRACT DIRECTORY NAME 
     char *directory_name = find_name(pathname);
     
-    // THROW ERROR IF NAME IS TOO LONG 
-    if ((strlen(directory_name) + 1) > SIFS_MAX_NAME_LENGTH)
+    // THROW ERROR IF NAME IS TOO LONG OR '/' PATHNAME PROVIDED (USER TRIES TO CREATE "ANOTHER" ROOT)
+    if ((strlen(directory_name) + 1) > SIFS_MAX_NAME_LENGTH || (strlen(pathname) == 1 && *pathname == '/'))
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
