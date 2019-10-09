@@ -34,7 +34,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     for (int i = 0; i < *nentries; i++)
     {
         int entry_ID = dirblock.entries[i].blockID;
-        //if (entry_ID == 0) continue; //empty 
+        //if (entry_ID == 0) continue; //empty change *nentries in for loop to SIFS_MAX_ENTRIES to check all spots
         fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
         char bitmap[nblocks]; 
         fread(bitmap, sizeof(bitmap), 1, fp);

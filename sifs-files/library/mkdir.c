@@ -60,7 +60,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
     dir.entries[dir.nentries].blockID = block_ID; // needs fixing, fill up empty spots instead of appending
-    dir.nentries++;
+    dir.nentries++; 
     dir.modtime = time(NULL);
     fseek(fp, jump, SEEK_SET);
     fwrite(&dir, sizeof dir, 1, fp);

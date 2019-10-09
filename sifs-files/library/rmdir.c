@@ -55,11 +55,14 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     parentblock.nentries--;
     parentblock.modtime = time(NULL);
 
-    for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
+    /*for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
     {
         //if ()
-    }
-    //parentblock.entries.
+    }*/
+    // TEMPORARY JUST TO TEST (should be done in for loop above)
+    parentblock.entries[0].blockID = 0;
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fwrite(&parentblock, sizeof(parentblock), 1, fp);
 
     fclose(fp);
     return 0;
