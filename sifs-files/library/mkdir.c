@@ -24,7 +24,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     } 
     
     //obtain information about nblocks and blocksize
-    int blocksize, nblocks;
+    int blocksize; 
+    uint32_t nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // DIRECTORY WITH THAT NAME ALREADY EXISTS 
@@ -47,7 +48,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_EMAXENTRY;
         return 1;
     }
-    
+
     // WRITE DIRECTORY BLOCK TO VOLUME 
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, -blocksize*(nblocks-block_ID), SEEK_END);

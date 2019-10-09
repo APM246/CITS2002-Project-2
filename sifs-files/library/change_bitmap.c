@@ -3,7 +3,7 @@
 #include "sifs-internal.h" 
 
 // add 1 more parameter: file pointer, avoids repetition. 
-int change_bitmap(const char *volumename, char type, SIFS_BLOCKID *blockID, int nblocks)
+int change_bitmap(const char *volumename, char type, SIFS_BLOCKID *blockID, uint32_t nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
