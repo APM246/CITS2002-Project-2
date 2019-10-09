@@ -44,7 +44,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     strcpy(path_name, pathname);
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT), SEEK_SET);
-
+    
     char *path;
     int parent_blockID = 0;
     SIFS_DIRBLOCK parent_buffer;
@@ -125,6 +125,5 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     }
 
     // can't find file/directory
-    SIFS_errno = SIFS_ENOENT;
     return -1;
 }
