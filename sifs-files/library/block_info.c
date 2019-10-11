@@ -13,7 +13,7 @@ char *find_name(const char *pathname)
     }
     else
     {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH + 1);
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH);
         strcpy(directory_name, pathname);
     }
     return directory_name;
@@ -88,8 +88,6 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 // read bitmap through this function as well, add extra paramter 
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
-
-
     char *directory_name = find_name(pathname);
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     FILE *fp = fopen(volumename, "r+");
