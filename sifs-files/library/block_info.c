@@ -82,6 +82,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
 
+    fclose(fp);
     return parent_blockID;
 }
 
@@ -129,5 +130,6 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
         }
     }
 
+    fclose(fp);
     return -1;
 }

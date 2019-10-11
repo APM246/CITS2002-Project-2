@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "sifs-internal.h" 
 
-// add 1 more parameter: file pointer, avoids repetition. 
 int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
@@ -22,5 +21,6 @@ int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
         }
     }
 
+    fclose(fp);
     return 1;
 }

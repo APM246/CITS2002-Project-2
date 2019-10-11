@@ -9,5 +9,6 @@ void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks
     fread(buffer, sizeof(buffer), 1, fp);
     *nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks; // data type of int ok?
     *blocksize = ((SIFS_VOLUME_HEADER *) buffer)->blocksize;
+    fclose(fp);
 }
 
