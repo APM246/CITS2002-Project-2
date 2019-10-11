@@ -73,9 +73,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     fileblock.length = nbytes;
     fileblock.modtime = time(NULL);
     fileblock.nfiles++;
-    char md5[40];
-    strcpy(md5, MD5_file(file_name);
-    //strcpy(fileblock.md5, );
+    memcpy(&fileblock.md5, MD5_file(file_name), MD5_STRLEN + 1); //printf("\n%s, strlen: %lu\n", fileblock.md5, strlen(MD5_file(file_name)));
 
     // WRITE THE FILEBLOCK TO THE VOLUME 
     FILE *fp = fopen(volumename, "r+");
