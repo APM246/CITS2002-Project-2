@@ -2,14 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 // get information about a requested directory
 int SIFS_dirinfo(const char *volumename, const char *pathname,
                  char ***entrynames, uint32_t *nentries, time_t *modtime)
 {
+    // NO SUCH VOLUME 
+    if (access(volumename, F_OK) != 0)
+    {
+        SIFS_errno	= SIFS_ENOVOL;
+        return 1;
+    }
+
     int blocksize, nblocks, blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks); 
 
+    // REQUESTING INFO OF ROOT DIRECTORY
     if (strlen(pathname) == 1 && *pathname == '/')
     {
         blockID = 0;

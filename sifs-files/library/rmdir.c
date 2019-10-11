@@ -2,10 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 // remove an existing directory from an existing volume
 int SIFS_rmdir(const char *volumename, const char *pathname)
 {
+    // NO SUCH VOLUME 
+    if (access(volumename, F_OK) != 0)
+    {
+        SIFS_errno	= SIFS_ENOVOL;
+        return 1;
+    }
+
     // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
     if (strlen(pathname) == 1 && *pathname == '/')
     {
