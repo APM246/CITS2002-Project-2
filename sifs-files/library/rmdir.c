@@ -58,15 +58,24 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     fread(&parentblock, sizeof(parentblock), 1, fp);
-    for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
+    int nentries = parentblock.nentries;
+    for (int i = 0; i < SIFS_MAX_ENTRIES; i++)   //change this to nentries of parent block
     {
         if (parentblock.entries[i].blockID == block_ID)
         {
-            parentblock.entries[i].blockID = 0;
-            parentblock.entries[i].fileindex = 0;
+            // shuffle entries in entries array 1 spot down
+            while (i < nentries - 1)
+            { 
+                parentblock.entries[i].blockID = parentblock.entries[i+1].blockID;
+                parentblock.entries[i].fileindex = parentblock.entries[i+1].fileindex;
+                i++;
+            }
+
             break;
         }
     }
+    parentblock.entries[nentries - 1].blockID = 0;   //update last spot that was shuffled down
+    parentblock.entries[nentries - 1].fileindex = 0;
     parentblock.nentries--;
     parentblock.modtime = time(NULL);
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
