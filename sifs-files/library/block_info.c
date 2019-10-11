@@ -89,14 +89,14 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char *directory_name = find_name(pathname);
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); //printf("\n%i\n", parent_blockID);
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK parent_dirblock; 
     fread(&parent_dirblock, sizeof(parent_dirblock), 1, fp);
     int nentries = parent_dirblock.nentries;
 
-    for (int i = 0; i < nentries; i++) //change from nentries since entries[1] and so on dont get checked or check bitmap?
+    for (int i = 0; i < nentries; i++) 
     {
         int entry_blockID = parent_dirblock.entries[i].blockID;
         fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
