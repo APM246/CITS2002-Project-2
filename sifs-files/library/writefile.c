@@ -46,14 +46,20 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }    
 
-    // check directory validity 
-    FILE *fp = fopen(volumename, "r+");
-
     // ACCESS VOLUME INFORMATION
     int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
+    // CHECK VALIDITY OF PATHNAME  
+    char *start_of_pathname = extract_start_of_pathname(pathname);
+    if (find_blockID(volumename, start_of_pathname, nblocks, blocksize) == -1)
+    {
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
     // DETERMINE IF FILE IS IDENTICAL TO PRE-EXISTING FILE
+    FILE *fp = fopen(volumename, "r+");
     unsigned char MD5buffer[MD5_BYTELEN];
     MD5_buffer(data, nbytes, MD5buffer);
     char bitmap[nblocks];
@@ -71,7 +77,6 @@ int SIFS_writefile(const char *volumename, const char *pathname,
             {
                 isIdentical = true;
                 fileblockID = i;
-                printf("\nIdentical\n");
                 break;
             }
         }

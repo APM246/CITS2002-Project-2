@@ -19,6 +19,26 @@ char *find_name(const char *pathname)
     return directory_name;
 }
 
+
+char *extract_start_of_pathname(const char *pathname)
+{
+    char *final = strrchr(pathname, '/');
+    int len = final - pathname;
+    if (len == 0)
+    {
+       *(final + 1) = '\0'; 
+       printf("\n%s\n\n", final);
+       return final;
+    }
+    else 
+    {
+        char *result = malloc(len + 1); //null byte 
+        strncpy(result, pathname, len + 1);
+        *(result + len) = '\0'; 
+        return result;
+    }
+}
+
 int get_number_of_slashes(const char* pathname)
 {
     char *path_name = malloc(sizeof(pathname));

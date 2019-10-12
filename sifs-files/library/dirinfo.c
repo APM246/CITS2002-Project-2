@@ -32,6 +32,17 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     }
 
     FILE *fp = fopen(volumename, "r+");
+    char bitmap[nblocks];
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+    fread(bitmap, sizeof(bitmap), 1, fp);
+
+    // NOT A DIRECTORY
+    if (bitmap[blockID] != SIFS_DIR)
+    {
+        SIFS_errno = SIFS_ENOTDIR;
+        return 1;
+    }
+
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);

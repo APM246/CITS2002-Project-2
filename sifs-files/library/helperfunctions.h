@@ -6,3 +6,4 @@ extern int get_number_of_slashes(const char* pathname);
 extern int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize);
 extern int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize);
 extern char *find_name(const char *pathname);
+extern char *extract_start_of_pathname(const char *pathname);

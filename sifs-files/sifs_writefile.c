@@ -36,7 +36,10 @@ int main(int argc, char *argv[])
     int size = buf.st_size;
     char buffer[size]; //change - use stat to determine size 
     fread(buffer, size, 1, fp);
-    SIFS_writefile(argv[1], argv[2], buffer, size);
+    if (SIFS_writefile(argv[1], argv[2], buffer, size) != 0)
+    {
+        SIFS_perror(NULL);
+    }
 
     return 0;
 }

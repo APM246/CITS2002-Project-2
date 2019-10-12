@@ -44,7 +44,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     int block_ID;
     if (change_bitmap(volumename, SIFS_DIR, &block_ID, nblocks) != 0)
     {
-        SIFS_errno = SIFS_EMAXENTRY;
+        SIFS_errno = SIFS_ENOSPC;
         return 1;
     }
     
@@ -55,11 +55,11 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     // UPDATE MODTIME, ENTRIES AND NENTRIES OF PARENT DIRECTORY 
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; // use macro
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
-    dir.entries[dir.nentries].blockID = block_ID; // needs fixing, fill up empty spots instead of appending
+    dir.entries[dir.nentries].blockID = block_ID; 
     dir.nentries++; 
     dir.modtime = time(NULL);
     fseek(fp, jump, SEEK_SET);
