@@ -4,13 +4,14 @@
 #include <unistd.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define NO_CONTIGUOUS_BLOCKS -1
 
 // find contiguous blocks to store contents of files - returns first blockID of data blocks 
 int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const char *volumename, int *nblocks_needed)
 {
-    *nblocks_needed = ceil(((double) nbytes)/blocksize); printf("\nnbytes: %lu, blocksize: %lu, needed: %i\n", nbytes, blocksize, *nblocks_needed);
+    *nblocks_needed = ceil(((double) nbytes)/blocksize); 
     FILE *fp = fopen(volumename, "r"); 
     char bitmap[nblocks];
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
@@ -46,10 +47,35 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     }    
 
     // check directory validity 
+    FILE *fp = fopen(volumename, "r+");
 
     // ACCESS VOLUME INFORMATION
     int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
     get_volume_header_info(volumename, &blocksize, &nblocks);
+
+    unsigned char MD5buffer[MD5_BYTELEN];
+    MD5_buffer(data, nbytes, MD5buffer);
+    char bitmap[nblocks];
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+    fread(bitmap, sizeof(bitmap), 1, fp);
+    //bool isIdentical = false;
+    for (int i = 0; i < nblocks; i++)
+    {
+        if (bitmap[i] == SIFS_FILE)
+        {
+            SIFS_FILEBLOCK fb;
+            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
+            fread(&fb, sizeof(SIFS_FILEBLOCK), 1, fp);
+            //if (i > 6) printf("\n%s\n", fb.md5);
+            if (memcmp(fb.md5, MD5buffer, MD5_BYTELEN) == 0)
+            {
+                //isIdentical = true;
+                printf("\nIdentical\n");
+                break;
+            }
+        }
+    }
+
 
     // CHANGE BITMAP TO ADD FILE BLOCK
     change_bitmap(volumename, SIFS_FILE, &fileblockID, nblocks);
@@ -62,7 +88,6 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }
 
-    printf("\nfirstID: %i\n", firstblockID);
     char *file_name = find_name(pathname);
 
     // INITIALISE FILEBLOCK
@@ -71,12 +96,11 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     strcpy(fileblock.filenames[0], file_name); // need generalisation
     fileblock.firstblockID = firstblockID;
     fileblock.length = nbytes;
-    fileblock.modtime = time(NULL);
-    fileblock.nfiles++;
-    memcpy(&fileblock.md5, MD5_file(file_name), MD5_STRLEN + 1); //printf("\n%s, strlen: %lu\n", fileblock.md5, strlen(MD5_file(file_name)));
+    fileblock.modtime = time(NULL); 
+    fileblock.nfiles++; 
+    memcpy(&fileblock.md5, MD5buffer, MD5_BYTELEN); 
 
     // WRITE THE FILEBLOCK TO THE VOLUME 
-    FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
     fwrite(&fileblock, sizeof(fileblock), 1, fp);
 
@@ -85,7 +109,6 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     fwrite(data, nbytes, 1, fp);
 
     // UPDATE BITMAP
-    char bitmap[nblocks];
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fread(bitmap, sizeof(bitmap), 1, fp);
     for (int i = firstblockID; i < firstblockID + nblocks_needed; i++)
@@ -97,13 +120,13 @@ int SIFS_writefile(const char *volumename, const char *pathname,
 
     // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; // use macro
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize;
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     dirblock.modtime = time(NULL);
     dirblock.entries[dirblock.nentries].blockID = fileblockID;
-    dirblock.entries[dirblock.nentries].fileindex = fileblock.nfiles - 1;
+    dirblock.entries[dirblock.nentries].fileindex = fileblock.nfiles - 1; 
     dirblock.nentries++;
     
     // WRITE PARENT DIRECTORY TO VOLUME
