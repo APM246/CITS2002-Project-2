@@ -143,7 +143,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
 
     // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY
     int parent_blockID;
-    if (get_number_of_slashes(pathname) > 1)
+    if (get_number_of_slashes(pathname) > 0)
     {
         parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     }
