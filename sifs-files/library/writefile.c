@@ -52,10 +52,13 @@ int SIFS_writefile(const char *volumename, const char *pathname,
 
     // CHECK VALIDITY OF PATHNAME  
     char *start_of_pathname = extract_start_of_pathname(pathname);
-    if (find_blockID(volumename, start_of_pathname, nblocks, blocksize) == -1)
+    if (strlen(start_of_pathname) != 1)
     {
-        SIFS_errno = SIFS_EINVAL;
-        return 1;
+        if (find_blockID(volumename, start_of_pathname, nblocks, blocksize) == -1)
+        {
+            SIFS_errno = SIFS_EINVAL;
+            return 1;
+        }
     }
 
     // DETERMINE IF FILE IS IDENTICAL TO PRE-EXISTING FILE
