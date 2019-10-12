@@ -53,12 +53,13 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
+    // DETERMINE IF FILE IS IDENTICAL TO PRE-EXISTING FILE
     unsigned char MD5buffer[MD5_BYTELEN];
     MD5_buffer(data, nbytes, MD5buffer);
     char bitmap[nblocks];
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fread(bitmap, sizeof(bitmap), 1, fp);
-    //bool isIdentical = false;
+    bool isIdentical = false;
     for (int i = 0; i < nblocks; i++)
     {
         if (bitmap[i] == SIFS_FILE)
@@ -66,57 +67,71 @@ int SIFS_writefile(const char *volumename, const char *pathname,
             SIFS_FILEBLOCK fb;
             fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
             fread(&fb, sizeof(SIFS_FILEBLOCK), 1, fp);
-            //if (i > 6) printf("\n%s\n", fb.md5);
             if (memcmp(fb.md5, MD5buffer, MD5_BYTELEN) == 0)
             {
-                //isIdentical = true;
+                isIdentical = true;
+                fileblockID = i;
                 printf("\nIdentical\n");
                 break;
             }
         }
     }
 
-
-    // CHANGE BITMAP TO ADD FILE BLOCK
-    change_bitmap(volumename, SIFS_FILE, &fileblockID, nblocks);
-
-    firstblockID = find_contiguous_blocks(nbytes, blocksize, nblocks, volumename, &nblocks_needed);
-
-    if (firstblockID == NO_CONTIGUOUS_BLOCKS)
+    // CHANGE BITMAP TO ADD FILE BLOCK IF FILE IS NOT IDENTICAL 
+    if (!isIdentical)
     {
-        SIFS_errno = SIFS_ENOSPC;
-        return 1;
+        change_bitmap(volumename, SIFS_FILE, &fileblockID, nblocks);
+        firstblockID = find_contiguous_blocks(nbytes, blocksize, nblocks, volumename, &nblocks_needed);
+
+        if (firstblockID == NO_CONTIGUOUS_BLOCKS)
+        {
+            SIFS_errno = SIFS_ENOSPC;
+            // REVERT CHANGE IN BITMAP (REMOVE FILEBLOCK) OR CHANGE BITMAP LATER (MAKE SURE TO SKIP PAST
+            // FIRST EMPTY BLOCK IN find_contiguous_blocks() (reserve for fileblock))
+            return 1;
+        }
     }
 
     char *file_name = find_name(pathname);
 
-    // INITIALISE FILEBLOCK
+    // INITIALISE FILEBLOCK OR UPDATE PRE-EXISTING FILEBLOCK IF FILE IS IDENTICAL
     SIFS_FILEBLOCK fileblock;
-    memset(&fileblock, 0, sizeof(fileblock));
-    strcpy(fileblock.filenames[0], file_name); // need generalisation
-    fileblock.firstblockID = firstblockID;
-    fileblock.length = nbytes;
-    fileblock.modtime = time(NULL); 
-    fileblock.nfiles++; 
-    memcpy(&fileblock.md5, MD5buffer, MD5_BYTELEN); 
+    if (!isIdentical)
+    {
+        memset(&fileblock, 0, sizeof(fileblock));
+        strcpy(fileblock.filenames[0], file_name);
+        fileblock.firstblockID = firstblockID;
+        fileblock.length = nbytes;
+        fileblock.modtime = time(NULL); 
+        fileblock.nfiles = 1;
+        memcpy(&fileblock.md5, MD5buffer, MD5_BYTELEN); 
 
+        // WRITE THE ACTUAL FILE TO THE VOLUME
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + firstblockID*blocksize, SEEK_SET);
+        fwrite(data, nbytes, 1, fp);
+
+        // UPDATE BITMAP
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+        fread(bitmap, sizeof(bitmap), 1, fp);
+        for (int i = firstblockID; i < firstblockID + nblocks_needed; i++)
+        {
+            bitmap[i] = SIFS_DATABLOCK;
+        }
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+        fwrite(bitmap, sizeof(bitmap), 1, fp);
+    }
+    
+    else
+    {
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
+        fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
+        strcpy(fileblock.filenames[fileblock.nfiles], file_name); 
+        fileblock.nfiles++; 
+    }
+    
     // WRITE THE FILEBLOCK TO THE VOLUME 
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
     fwrite(&fileblock, sizeof(fileblock), 1, fp);
-
-    // WRITE THE ACTUAL FILE TO THE VOLUME
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + firstblockID*blocksize, SEEK_SET);
-    fwrite(data, nbytes, 1, fp);
-
-    // UPDATE BITMAP
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
-    fread(bitmap, sizeof(bitmap), 1, fp);
-    for (int i = firstblockID; i < firstblockID + nblocks_needed; i++)
-    {
-        bitmap[i] = SIFS_DATABLOCK;
-    }
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
-    fwrite(bitmap, sizeof(bitmap), 1, fp);
 
     // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
