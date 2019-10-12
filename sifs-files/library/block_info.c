@@ -22,21 +22,22 @@ char *find_name(const char *pathname)
 
 char *extract_start_of_pathname(const char *pathname)
 {
-    char *final = strrchr(pathname, '/');
-    int len = final - pathname;
+    char *result;
+    int len = strrchr(pathname, '/') - pathname;
     if (len == 0)
     {
-       *(final + 1) = '\0'; 
-       printf("\n%s\n\n", final);
-       return final;
+        result = malloc(2);
+        result[0] = '/';
+        result[1] = '\0';
     }
     else 
     {
-        char *result = malloc(len + 1); //null byte 
+        result = malloc(len + 1); //null byte 
         strncpy(result, pathname, len + 1);
         *(result + len) = '\0'; 
-        return result;
     }
+    
+    return result;
 }
 
 int get_number_of_slashes(const char* pathname)

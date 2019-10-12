@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     struct stat buf;
     stat(argv[3], &buf);
     int size = buf.st_size;
-    char buffer[size]; //change - use stat to determine size 
+    char buffer[size]; 
     fread(buffer, size, 1, fp);
     if (SIFS_writefile(argv[1], argv[2], buffer, size) != 0)
     {

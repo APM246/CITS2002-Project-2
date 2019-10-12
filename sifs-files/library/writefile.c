@@ -100,7 +100,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         }
     }
 
-    char *file_name = find_name(pathname);
+    char *file_name = find_name(pathname); 
 
     // INITIALISE FILEBLOCK OR UPDATE PRE-EXISTING FILEBLOCK IF FILE IS IDENTICAL
     SIFS_FILEBLOCK fileblock;
@@ -142,7 +142,16 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     fwrite(&fileblock, sizeof(fileblock), 1, fp);
 
     // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    int parent_blockID;
+    if (get_number_of_slashes(pathname) > 1)
+    {
+        parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
+    }
+    else 
+    {
+        parent_blockID = 0; //root 
+    }
+
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize;
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
