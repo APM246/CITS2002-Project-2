@@ -2,6 +2,7 @@
 *.json
 *.txt
 *.a
+*.docx
 sifs_mkvolume
 sifs_dirinfo
 write_test.c
@@ -13,3 +14,4 @@ sifs_rmdir
 sample volumes
 Visual Studio CITS2002 Project 2
 sifs-files\.vs\slnx.sqlite
+tocopy
