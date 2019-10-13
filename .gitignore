@@ -17,3 +17,5 @@ sifs-files\.vs\slnx.sqlite
 tocopy
 sifs_fileinfo
 sifs_writefile
+read
+sifs-files/sifs_readfile
