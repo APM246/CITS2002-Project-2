@@ -22,10 +22,18 @@ int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const c
         return NO_CONTIGUOUS_BLOCKS;
     }
     
+    bool isReserved = true; //reserve for fileblock
     for (int i = 0; i < nblocks; i++)
     {
         for (int j = 0; j < *nblocks_needed; j++)
         {
+            // FIRST UNUSED BLOCK THAT IS ENCOUNTERED MUST BE RESERVED FOR FILEBLOCK
+            if (bitmap[i] == SIFS_UNUSED && isReserved)
+            {
+                isReserved = false;
+                break;
+            }
+
             if (j == *nblocks_needed - 1 && bitmap[i+j] == SIFS_UNUSED) return i;
             else if (bitmap[i+j] != SIFS_UNUSED) break;
         }
@@ -33,7 +41,6 @@ int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const c
 
     return NO_CONTIGUOUS_BLOCKS;
 }
-
 
 // add a copy of a new file to an existing volume
 int SIFS_writefile(const char *volumename, const char *pathname,
@@ -88,16 +95,15 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     // CHANGE BITMAP TO ADD FILE BLOCK IF FILE IS NOT IDENTICAL 
     if (!isIdentical)
     {
-        change_bitmap(volumename, SIFS_FILE, &fileblockID, nblocks);
         firstblockID = find_contiguous_blocks(nbytes, blocksize, nblocks, volumename, &nblocks_needed);
 
         if (firstblockID == NO_CONTIGUOUS_BLOCKS)
         {
             SIFS_errno = SIFS_ENOSPC;
-            // REVERT CHANGE IN BITMAP (REMOVE FILEBLOCK) OR CHANGE BITMAP LATER (MAKE SURE TO SKIP PAST
-            // FIRST EMPTY BLOCK IN find_contiguous_blocks() (reserve for fileblock))
             return 1;
         }
+
+        change_bitmap(volumename, SIFS_FILE, &fileblockID, nblocks); //add 'f' to bitmap
     }
 
     char *file_name = find_name(pathname); 
