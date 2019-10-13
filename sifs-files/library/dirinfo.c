@@ -24,7 +24,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         blockID = 0;
     }
 
-    // NO SUCH FILE OR DIRECTORY EXISTS 
+    // NO SUCH DIRECTORY EXISTS 
     else if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) 
     {
         SIFS_errno = SIFS_ENOENT;
