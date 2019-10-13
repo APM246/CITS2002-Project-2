@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // get information about a requested file
 int SIFS_fileinfo(const char *volumename, const char *pathname,
@@ -11,6 +12,13 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
     if (access(volumename, F_OK) != 0)
     {
         SIFS_errno	= SIFS_ENOVOL;
+        return 1;
+    }
+
+    // ROOT IS NOT A FILE
+    if (strlen(pathname) == 1 && *pathname == '/')
+    {
+        SIFS_errno = SIFS_ENOTFILE;
         return 1;
     }
 
@@ -30,7 +38,7 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
     fread(bitmap, sizeof(bitmap), 1, fp);
 
     // NOT A FILE
-    if ((bitmap[blockID] != SIFS_FILE) || (strlen(pathname) == 1 && *pathname = '/')
+    if ((bitmap[blockID] != SIFS_FILE))
     {
         SIFS_errno = SIFS_ENOTFILE;
         return 1;

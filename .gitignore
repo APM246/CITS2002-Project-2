@@ -15,3 +15,5 @@ sample volumes
 Visual Studio CITS2002 Project 2
 sifs-files\.vs\slnx.sqlite
 tocopy
+sifs_fileinfo
+sifs_writefile

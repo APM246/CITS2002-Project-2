@@ -68,6 +68,13 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         }
     }
 
+    // FILE WITH THAT NAME ALREADY EXISTS 
+    if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
+    {
+        SIFS_errno = SIFS_EEXIST;
+        return 1;
+    }
+
     // DETERMINE IF FILE IS IDENTICAL TO PRE-EXISTING FILE
     FILE *fp = fopen(volumename, "r+");
     unsigned char MD5buffer[MD5_BYTELEN];
