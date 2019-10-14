@@ -44,18 +44,20 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     SIFS_DIRBLOCK dirblock;
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
-    int nentries = dirblock.nentries;
+    int nentries = dirblock.nentries; 
 
     // UPDATE FILEBLOCK (EITHER REMOVE IF LAST ENTRY OR UPDATE VALUES)
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
     SIFS_FILEBLOCK fileblock;
-    fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
+    fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp); 
     if (fileblock.nfiles == 1)
     {        
         // REMOVE DATABLOCK(S) FROM VOLUME 
         SIFS_BLOCKID firstblockID = fileblock.firstblockID; 
         fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + firstblockID*blocksize, SEEK_SET);
-        memset(fp, 0, fileblock.length);
+        char zeroes[fileblock.length];
+        memset(zeroes, 0, sizeof(zeroes));
+        fwrite(zeroes, sizeof(zeroes), 1, fp); 
 
         //UPDATE BITMAP AND WRITE TO VOLUME 
         bitmap[blockID] = SIFS_UNUSED; // UPDATE FILEBLOCK BIT
