@@ -34,8 +34,14 @@ int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const c
                 break;
             }
 
-            if (j == *nblocks_needed - 1 && bitmap[i+j] == SIFS_UNUSED) return i;
-            else if (bitmap[i+j] != SIFS_UNUSED) break;
+            if (j == *nblocks_needed - 1 && bitmap[i+j] == SIFS_UNUSED) 
+            {
+                return i;
+            }
+            else if (bitmap[i+j] != SIFS_UNUSED) 
+            {
+                break;
+            }
         }
     }
 

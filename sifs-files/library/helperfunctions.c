@@ -83,7 +83,10 @@ int get_number_of_slashes(const char* pathname)
     strcpy(path_name, pathname);
     int number = 0;
     char delimiter[] = "/";
-    if (strcmp(strtok(path_name, delimiter), pathname) == 0) return 0;
+    if (strcmp(strtok(path_name, delimiter), pathname) == 0) 
+    {
+        return 0;
+    }
 
     while (strtok(NULL, delimiter) != NULL) number++;
     free(path_name);
@@ -96,13 +99,22 @@ int get_number_of_slashes(const char* pathname)
 int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     int max_iterations;
-    if ((max_iterations = get_number_of_slashes(pathname)) == 0) return 0;
+    if ((max_iterations = get_number_of_slashes(pathname)) == 0) 
+    {
+        return 0;
+    }
     char *path_name = malloc(SIFS_MAX_NAME_LENGTH); 
     strcpy(path_name, pathname);
     if (*pathname == '/')
     {
-        if (strlen(pathname) == 1) return 0; // pathname provided is the root directory 
-        else path_name++; //skip past first '/'
+        if (strlen(pathname) == 1) 
+        {
+            return 0; // pathname provided is the root directory 
+        }
+        else 
+        {
+            path_name++; //skip past first '/'
+        }
     }
 
     FILE *fp = fopen(volumename, "r+");
@@ -174,7 +186,7 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
             }
         }
 
-        else if (type == SIFS_FILE) // amend to include SIFS_DATABLOCK?
+        else if (type == SIFS_FILE) 
         {
             SIFS_FILEBLOCK entry_file;
             int index = parent_dirblock.entries[i].fileindex;
