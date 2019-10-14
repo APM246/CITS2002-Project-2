@@ -21,3 +21,5 @@ read
 sifs-files/sifs_readfile
 sifs-files/sifs_rmfile
 sifs-files/sifs_writefile
+sifs-files/copy.h
+sifs-files/testing

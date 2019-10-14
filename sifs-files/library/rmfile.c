@@ -74,9 +74,11 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     }
     else
     {
-        char *name = fileblock.filenames[get_fileindex(fp, parent_blockID, blockID, nentries, nblocks, blocksize)];
+        char *name = find_name(pathname); 
+        
         // SORT FILENAMES ARRAY (shuffle down)
         sort_filenames(fp, name, &fileblock);
+        strcpy(fileblock.filenames[1], "");
         fileblock.nfiles--;
     }
     

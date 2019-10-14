@@ -188,24 +188,6 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     return -1;
 }
 
-int get_fileindex(FILE *fp, SIFS_BLOCKID parent_blockID, SIFS_BLOCKID blockID, uint32_t nentries, uint32_t nblocks, size_t blocksize)
-{
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
-    SIFS_DIRBLOCK parentblock;
-    fread(&parentblock, sizeof(SIFS_DIRBLOCK), 1, fp);
-    int fileindex;
-
-    for (int i = 0; i < nentries; i++)
-    {
-        if (parentblock.entries[i].blockID == blockID)
-        {
-            fileindex = parentblock.entries[i].fileindex;
-        }    
-    }
-
-    return fileindex;
-}
-
 void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock)
 {
     uint32_t nfiles = fileblock->nfiles; //value hasn't been decremented yet 
