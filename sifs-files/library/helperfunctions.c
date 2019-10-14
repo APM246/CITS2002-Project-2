@@ -13,6 +13,8 @@ void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks
     fclose(fp);
 }
 
+// -----------------------------------------------------------------------
+
 int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
@@ -35,6 +37,8 @@ int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
     fclose(fp);
     return 1;
 }
+
+// -------------------------------------------- PATHNAME HELPER FUNCTIONS 
 
 //  EXTRACT NAME (REMOVE SUPER DIRECTORIES FROM NAME)
 char *find_name(const char *pathname)
@@ -87,9 +91,8 @@ int get_number_of_slashes(const char* pathname)
     return number;
 }
 
-// can't write to an uninitialised pointer (e.g. in strcpy()) but other functions don't need to malloc (e.g strrchr, pointer points to already
-// allocated memory or handles malloc() itself) (exception initialise to NULL?)
-// weirdly a double pointer is used for the address of a single pointer, triple pointer for double pointer, etc.
+// --------------------------------------------------------- blockID helper functions
+
 int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     int max_iterations;
@@ -188,6 +191,26 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     return -1;
 }
 
+// -------------------------------------------------------- FILEBLOCK helper functions
+
+// FINDS FILEINDEX OF A PARTICULAR FILE 
+int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)
+{
+    uint32_t nfiles = fileblock->nfiles;
+    uint32_t index;
+
+    for (int i = 0; i < nfiles; i++)
+    {
+        if (strcmp(fileblock->filenames[i], name) == 0)
+        {
+            index = i;
+            break;  //could return -1 to help with throwing "no such file entry error"
+        }
+    }
+
+    return index;
+}
+
 /* 
     WHEN THE FILENAMES ARRAY IS BEING SHUFFLED DOWN AFTER RMFILE() IS CALLED (TO ELIMINATE GAPS), 
     THE FILEINDEX VALUES OF VARIOUS FILES MUST BE DECREMENTED (ONLY THE ONES BEING SHUFFLED DOWN)
@@ -195,7 +218,7 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     THE ENTRY IN THE ENTRIES ARRAY WHICH CORRESPONDS TO NAME3 MUST HAVE ITS FILEINDEX VALUE
     DECREMENTED 
 */
-void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t nblocks)
+void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize)
 {
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     char bitmap[nblocks];
@@ -213,6 +236,7 @@ void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t
             {
                 if (dirblock.entries[j].blockID == blockID && dirblock.entries[j].fileindex > fileindex)
                 {
+                     printf("blockID: %i, fileindex: %i", dirblock.entries[j].blockID, dirblock.entries[j].fileindex);
                     dirblock.entries[j].fileindex--;
                 }
             }
@@ -224,7 +248,7 @@ void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t
     }
 }
 
-void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks)
+void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize)
 {
     uint32_t nfiles = fileblock->nfiles; //value hasn't been decremented yet 
 
@@ -232,7 +256,7 @@ void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BL
     {
         if (strcmp(fileblock->filenames[i], filename) == 0)
         {
-            decrement_fileindex(fp, i, blockID, nblocks);
+            decrement_fileindex(fp, i, blockID, nblocks, blocksize);
             while (i < nfiles - 1)
             {
                 strcpy(fileblock->filenames[i], fileblock->filenames[i+1]);

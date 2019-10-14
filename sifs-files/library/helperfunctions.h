@@ -8,4 +8,5 @@ extern int find_parent_blockID(const char *volumename, const char *pathname, int
 extern int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize);
 extern char *find_name(const char *pathname);
 extern char *extract_start_of_pathname(const char *pathname);
-extern void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks);
+extern void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize);
+extern int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name);
