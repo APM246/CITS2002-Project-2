@@ -236,7 +236,6 @@ void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t
             {
                 if (dirblock.entries[j].blockID == blockID && dirblock.entries[j].fileindex > fileindex)
                 {
-                     printf("blockID: %i, fileindex: %i", dirblock.entries[j].blockID, dirblock.entries[j].fileindex);
                     dirblock.entries[j].fileindex--;
                 }
             }

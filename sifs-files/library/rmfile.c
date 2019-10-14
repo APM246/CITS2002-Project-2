@@ -18,7 +18,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
      // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
     if (strlen(pathname) == 1 && *pathname == '/')
     {
-        SIFS_errno = SIFS_ENOTDIR;
+        SIFS_errno = SIFS_ENOTFILE;
         return 1;
     }
 
