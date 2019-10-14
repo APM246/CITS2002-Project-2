@@ -19,3 +19,5 @@ sifs_fileinfo
 sifs_writefile
 read
 sifs-files/sifs_readfile
+sifs-files/sifs_rmfile
+sifs-files/sifs_writefile

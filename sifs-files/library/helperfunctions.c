@@ -3,6 +3,40 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks)
+{
+    FILE *fp = fopen(volumename, "r+");
+    char buffer[sizeof(SIFS_VOLUME_HEADER)];
+    fread(buffer, sizeof(buffer), 1, fp);
+    *nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks; // data type of int ok?
+    *blocksize = ((SIFS_VOLUME_HEADER *) buffer)->blocksize;
+    fclose(fp);
+}
+
+int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
+{
+    FILE *fp = fopen(volumename, "r+");
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+    SIFS_BIT bit;
+
+    for (int i = 0; i < nblocks; i++)
+    {
+        fread(&bit, sizeof(char), 1, fp);
+        if (bit == SIFS_UNUSED) 
+        {
+            *blockID = i;
+            fseek(fp, -1, SEEK_CUR);
+            fwrite(&type, sizeof(char), 1, fp);
+            fclose(fp);
+            return 0;
+        }
+    }
+
+    fclose(fp);
+    return 1;
+}
+
 //  EXTRACT NAME (REMOVE SUPER DIRECTORIES FROM NAME)
 char *find_name(const char *pathname)
 {

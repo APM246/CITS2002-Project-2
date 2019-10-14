@@ -49,7 +49,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         return 1;
     }
 
-    // change bitmap - REMOVE FIRST TWO LINES 
+    // change bitmap - REMOVE FIRST TWO LINES (?)
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fread(bitmap, sizeof(bitmap), 1, fp);
     bitmap[block_ID] = SIFS_UNUSED;
