@@ -188,7 +188,43 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     return -1;
 }
 
-void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock)
+/* 
+    WHEN THE FILENAMES ARRAY IS BEING SHUFFLED DOWN AFTER RMFILE() IS CALLED (TO ELIMINATE GAPS), 
+    THE FILEINDEX VALUES OF VARIOUS FILES MUST BE DECREMENTED (ONLY THE ONES BEING SHUFFLED DOWN)
+    E.G. IF NAME2 REMOVED FROM {NAME1, NAME2, NAME3} --> {NAME1, NAME3, ..}
+    THE ENTRY IN THE ENTRIES ARRAY WHICH CORRESPONDS TO NAME3 MUST HAVE ITS FILEINDEX VALUE
+    DECREMENTED 
+*/
+void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t nblocks)
+{
+    fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+    char bitmap[nblocks];
+    fread(bitmap, nblocks, 1, fp);
+
+    for (int i = 0; i < nblocks; i++)
+    {
+        if (bitmap[i] == SIFS_DIR)
+        {
+            SIFS_DIRBLOCK dirblock;
+            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
+            fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
+
+            for (int j = 0; j < SIFS_MAX_ENTRIES; j++)
+            {
+                if (dirblock.entries[j].blockID == blockID && dirblock.entries[j].fileindex > fileindex)
+                {
+                    dirblock.entries[j].fileindex--;
+                }
+            }
+
+            // WRITE BACK TO VOLUME 
+            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
+            fwrite(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
+        }
+    }
+}
+
+void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks)
 {
     uint32_t nfiles = fileblock->nfiles; //value hasn't been decremented yet 
 
@@ -196,11 +232,16 @@ void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock)
     {
         if (strcmp(fileblock->filenames[i], filename) == 0)
         {
+            decrement_fileindex(fp, i, blockID, nblocks);
             while (i < nfiles - 1)
             {
                 strcpy(fileblock->filenames[i], fileblock->filenames[i+1]);
                 i++;
             }
+            break;
         }
     }
+
+    // update last spot
+    strcpy(fileblock->filenames[nfiles - 1], "");
 }

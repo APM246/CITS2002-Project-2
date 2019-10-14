@@ -75,10 +75,9 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     else
     {
         char *name = find_name(pathname); 
-        
+
         // SORT FILENAMES ARRAY (shuffle down)
-        sort_filenames(fp, name, &fileblock);
-        strcpy(fileblock.filenames[1], "");
+        sort_filenames(fp, name, &fileblock, blockID, nblocks);
         fileblock.nfiles--;
     }
     
