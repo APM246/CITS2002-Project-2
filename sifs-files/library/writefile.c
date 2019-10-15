@@ -59,35 +59,24 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }    
 
-    // THROW ERROR IF NAME IS TOO LONG OR FILENAME PROVIDED IS JUST "/"
+    // ACCESS VOLUME INFORMATION
+    int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
+    get_volume_header_info(volumename, &blocksize, &nblocks);
+
+     // THROW ERROR IF NAME IS TOO LONG OR FILENAME PROVIDED IS JUST "/"
     if ((strlen(find_name(pathname)) + 1) > SIFS_MAX_NAME_LENGTH || (strlen(pathname) == 1 && *pathname == '/'))
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     } 
 
-    // ACCESS VOLUME INFORMATION
-    int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
-    get_volume_header_info(volumename, &blocksize, &nblocks);
-
-    // CHECK VALIDITY OF PATHNAME - add to other functions  
-    char *start_of_pathname = extract_start_of_pathname(pathname); //free it?
-    if (strlen(start_of_pathname) != 1)
+    // CHECK IF PATHNAME IS VALID 
+    int parent_blockID;
+    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == -1)
     {
-        if (find_blockID(volumename, start_of_pathname, nblocks, blocksize) == -1)
-        {
-            SIFS_errno = SIFS_EINVAL;
-            return 1;
-        }
-    }
-
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
-    /*if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == -1)
-    {
-        printf("\n%i\n", parent_blockID);
         SIFS_errno = SIFS_EINVAL;
         return 1;
-    }*/
+    }
 
     // FILE WITH THAT NAME ALREADY EXISTS 
     if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
@@ -96,8 +85,19 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }
 
-    // DETERMINE IF FILE IS IDENTICAL TO PRE-EXISTING FILE
+    // CHECK IF PARENT BLOCK HAS NO SPACE LEFT FOR ENTRIES
     FILE *fp = fopen(volumename, "r+");
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
+    fseek(fp, jump, SEEK_SET);
+    SIFS_DIRBLOCK dir;
+    fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
+    if (dir.nentries == SIFS_MAX_ENTRIES)
+    {
+        SIFS_errno = SIFS_EMAXENTRY;
+        return 1;
+    }
+
+    // DETERMINE IF FILE IS IDENTICAL TO PRE-EXISTING FILE
     unsigned char MD5buffer[MD5_BYTELEN];
     MD5_buffer(data, nbytes, MD5buffer);
     char bitmap[nblocks];
@@ -120,7 +120,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         }
     }
 
-    // CHANGE BITMAP TO ADD FILE BLOCK IF FILE IS NOT IDENTICAL 
+    // CHANGE BITMAP TO ADD NEW FILE BLOCK IF FILE IS NOT IDENTICAL 
     if (!isIdentical)
     {
         firstblockID = find_contiguous_blocks(nbytes, blocksize, nblocks, volumename, &nblocks_needed);
@@ -167,6 +167,13 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     {
         fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
         fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
+
+        // NO SPACE LEFT IN FILEBLOCK (FILENAMES ARRAY)
+        if (fileblock.nfiles == SIFS_MAX_ENTRIES)
+        {
+            SIFS_errno = SIFS_ENOSPC;
+            return 1;
+        }
         strcpy(fileblock.filenames[fileblock.nfiles], file_name); 
         fileblock.nfiles++; 
     }
@@ -176,7 +183,6 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     fwrite(&fileblock, sizeof(fileblock), 1, fp);
 
     // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY 
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize;
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);

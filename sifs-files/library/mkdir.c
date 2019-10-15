@@ -27,16 +27,23 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     int blocksize, nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
+    // CHECK IF PATHNAME IS VALID
+    FILE *fp = fopen(volumename, "r+");
+    int parent_blockID;
+    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == -1)
+    {
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
     // DIRECTORY WITH THAT NAME ALREADY EXISTS 
     if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
     {
         SIFS_errno = SIFS_EEXIST;
         return 1;
     }
-
+    
     // CHECK IF PARENT BLOCK HAS NO SPACE LEFT FOR ENTRIES
-    FILE *fp = fopen(volumename, "r+");
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dir;

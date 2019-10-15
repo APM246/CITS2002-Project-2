@@ -148,8 +148,10 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
                 fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
                 n_iterations++;
                 break;
-            }    
-            //if (i == SIFS_MAX_ENTRIES - 1) return -1; //change to nentries?
+            }
+
+            //  PATHNAME COMPONENT DOESN'T EXIST 
+            if (i == SIFS_MAX_ENTRIES - 1) return -1; //change to nentries?
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
@@ -163,7 +165,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char *directory_name = find_name(pathname);
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK parent_dirblock; 
