@@ -18,9 +18,16 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     }
 
     FILE *fp = fopen(volumename, "r+");
-    int nblocks, blocksize;
+    int nblocks, blocksize, block_ID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
-    int block_ID = find_blockID(volumename, pathname, nblocks, blocksize); 
+
+    // NO SUCH DIRECTORY EXISTS 
+    if ((block_ID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID) 
+    {
+        SIFS_errno = SIFS_ENOENT;
+        return 1;
+    }
+
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     char bitmap[nblocks];
     fread(bitmap, sizeof(bitmap), 1, fp);
@@ -29,8 +36,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     // THROW ERROR IF PATHNAME IS NOT A DIRECTORY
     if (type != SIFS_DIR)
     {
-        if (block_ID == -1) SIFS_errno = SIFS_ENOENT;
-        else SIFS_errno = SIFS_ENOTDIR; // The block is a file or data block
+        SIFS_errno = SIFS_ENOTDIR; // The block is a file block
         return 1;
     }
 

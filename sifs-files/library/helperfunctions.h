@@ -9,7 +9,9 @@
 // ----------------------------------------------------------------------- MACROS 
 
 //#define fileseek(nblocks, blocksize, blockID) fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET); 
-
+#define NO_CONTIGUOUS_BLOCKS -1 // No contiguous blocks of memory found to store data blocks 
+#define NO_SUCH_BLOCKID -1 // There is no directory or file entry with that pathname 
+#define NO_SUCH_FILENAME -1 // There is no file entry with that file name 
 
 //                          HELPER FUNCTIONS CATEGORISED 
 

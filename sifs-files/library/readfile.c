@@ -23,7 +23,7 @@ int SIFS_readfile(const char *volumename, const char *pathname,
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // NO SUCH FILE EXISTS 
-    if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) 
+    if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID) 
     {
         SIFS_errno = SIFS_ENOENT;
         return 1;

@@ -21,7 +21,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     }
 
     // NO SUCH DIRECTORY EXISTS 
-    else if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == -1) 
+    else if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID) 
     {
         SIFS_errno = SIFS_ENOENT;
         return 1;

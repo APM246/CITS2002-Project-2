@@ -27,14 +27,14 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     // CHECK IF PATHNAME IS VALID
     FILE *fp = fopen(volumename, "r+");
     int parent_blockID;
-    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == -1)
+    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
     // DIRECTORY WITH THAT NAME ALREADY EXISTS 
-    if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
+    if (find_blockID(volumename, pathname, nblocks, blocksize) != NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_EEXIST;
         return 1;

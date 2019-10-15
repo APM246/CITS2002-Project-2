@@ -1,7 +1,5 @@
 #include "helperfunctions.h"
 
-#define NO_CONTIGUOUS_BLOCKS -1
-
 // find contiguous blocks to store contents of files - returns first blockID of data blocks 
 int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const char *volumename, int *nblocks_needed)
 {
@@ -66,14 +64,14 @@ int SIFS_writefile(const char *volumename, const char *pathname,
 
     // CHECK IF PATHNAME IS VALID 
     int parent_blockID;
-    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == -1)
+    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
     // FILE WITH THAT NAME ALREADY EXISTS 
-    if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
+    if (find_blockID(volumename, pathname, nblocks, blocksize) != NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_EEXIST;
         return 1;

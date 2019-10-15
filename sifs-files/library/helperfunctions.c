@@ -1,7 +1,4 @@
-#include "sifs-internal.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "helperfunctions.h"
 
 void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks)
 {
@@ -27,7 +24,7 @@ int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
         if (bit == SIFS_UNUSED) 
         {
             *blockID = i;
-            fseek(fp, -1, SEEK_CUR);
+            fseek(fp, -sizeof(SIFS_BIT), SEEK_CUR);
             fwrite(&type, sizeof(char), 1, fp);
             fclose(fp);
             return 0;
@@ -151,7 +148,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
             }
 
             //  PATHNAME COMPONENT DOESN'T EXIST 
-            if (i == SIFS_MAX_ENTRIES - 1) return -1; //change to nentries?
+            if (i == SIFS_MAX_ENTRIES - 1) return NO_SUCH_BLOCKID; //change to nentries?
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
@@ -165,7 +162,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char *directory_name = find_name(pathname);
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); //if (parent_blockID == -1) return -1;
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK parent_dirblock; 
@@ -206,7 +203,7 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     }
 
     fclose(fp);
-    return -1;
+    return NO_SUCH_BLOCKID;
 }
 
 // -------------------------------------------------------- FILEBLOCK 
@@ -224,7 +221,7 @@ int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)
         }
     }
 
-    return -1;  // check return value in caller 
+    return NO_SUCH_FILENAME;  // check return value in caller 
 }
 
 /* 

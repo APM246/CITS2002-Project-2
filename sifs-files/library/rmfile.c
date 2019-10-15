@@ -19,9 +19,13 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
 
     // OBTAIN INFORMATION 
     FILE *fp = fopen(volumename, "r+");
-    int nblocks, blocksize;
+    int nblocks, blocksize, blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
-    int blockID = find_blockID(volumename, pathname, nblocks, blocksize); 
+    if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
+    {
+        SIFS_errno = SIFS_ENOENT;
+        return 1;
+    } 
     char *name = find_name(pathname); 
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
 
@@ -33,8 +37,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     // THROW ERROR IF PATHNAME IS NOT A FILE
     if (type != SIFS_FILE)
     {
-        if (blockID == -1) SIFS_errno = SIFS_ENOENT;
-        else SIFS_errno = SIFS_ENOTFILE; // The block is a file or data block
+        SIFS_errno = SIFS_ENOTFILE; // The block is a directory block
         return 1;
     }
 
@@ -49,7 +52,12 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
     SIFS_FILEBLOCK fileblock;
     fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp); 
-    uint32_t fileindex = find_fileindex(&fileblock, name);
+    uint32_t fileindex; 
+    if ((fileindex = find_fileindex(&fileblock, name)) == NO_SUCH_FILENAME)
+    {
+        SIFS_errno = SIFS_ENOENT; // LAST CHECK FOR WHETHER PATHNAME IS INVALID
+        return 1;
+    }
     if (fileblock.nfiles == 1)
     {        
         // REMOVE DATABLOCK(S) FROM VOLUME 
