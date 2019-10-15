@@ -92,4 +92,3 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     fclose(fp);
     return 0;
 }
-
