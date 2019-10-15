@@ -211,18 +211,16 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
 int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)
 {
     uint32_t nfiles = fileblock->nfiles;
-    uint32_t index;
 
     for (int i = 0; i < nfiles; i++)
     {
         if (strcmp(fileblock->filenames[i], name) == 0)
         {
-            index = i;
-            break;  //could return -1 to help with throwing "no such file entry error"
+            return i;
         }
     }
 
-    return index;
+    return -1;  // check return value in caller 
 }
 
 /* 
