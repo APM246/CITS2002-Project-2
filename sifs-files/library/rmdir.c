@@ -1,8 +1,4 @@
 #include "helperfunctions.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 // remove an existing directory from an existing volume
 int SIFS_rmdir(const char *volumename, const char *pathname)

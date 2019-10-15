@@ -8,7 +8,7 @@ void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks
     FILE *fp = fopen(volumename, "r+");
     char buffer[sizeof(SIFS_VOLUME_HEADER)];
     fread(buffer, sizeof(buffer), 1, fp);
-    *nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks; // data type of int ok?
+    *nblocks = ((SIFS_VOLUME_HEADER *) buffer)->nblocks; 
     *blocksize = ((SIFS_VOLUME_HEADER *) buffer)->blocksize;
     fclose(fp);
 }
@@ -38,7 +38,7 @@ int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
     return 1;
 }
 
-// -------------------------------------------- PATHNAME HELPER FUNCTIONS 
+// -------------------------------------------- PATHNAME 
 
 //  EXTRACT NAME (REMOVE SUPER DIRECTORIES FROM NAME)
 char *find_name(const char *pathname)
@@ -95,7 +95,7 @@ int get_number_of_slashes(const char* pathname)
     return number;
 }
 
-// --------------------------------------------------------- blockID helper functions
+// --------------------------------------------------------- blockID 
 
 int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
@@ -209,7 +209,7 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
     return -1;
 }
 
-// -------------------------------------------------------- FILEBLOCK helper functions
+// -------------------------------------------------------- FILEBLOCK 
 
 // FINDS FILEINDEX OF A PARTICULAR FILE 
 int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)

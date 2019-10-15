@@ -1,8 +1,4 @@
 #include "helperfunctions.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 // read the contents of an existing file from an existing volume
 int SIFS_readfile(const char *volumename, const char *pathname,

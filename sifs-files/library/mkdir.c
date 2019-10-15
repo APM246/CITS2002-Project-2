@@ -1,7 +1,4 @@
 #include "helperfunctions.h"
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
 
 // make a new directory within an existing volume
 int SIFS_mkdir(const char *volumename, const char *pathname)
@@ -56,7 +53,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     
     // CREATE THE NEW DIRECTORY BLOCK
     SIFS_DIRBLOCK new_dir; 
-    strcpy(new_dir.name, directory_name);   
+    strcpy(new_dir.name, directory_name); 
     new_dir.modtime = time(NULL);
     new_dir.nentries = 0;
 

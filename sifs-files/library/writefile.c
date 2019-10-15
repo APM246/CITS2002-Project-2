@@ -1,10 +1,4 @@
 #include "helperfunctions.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <string.h>
-#include <stdbool.h>
 
 #define NO_CONTIGUOUS_BLOCKS -1
 

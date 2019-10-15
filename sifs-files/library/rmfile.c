@@ -1,9 +1,4 @@
 #include "helperfunctions.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 
 // remove an existing file from an existing volume
 int SIFS_rmfile(const char *volumename, const char *pathname)

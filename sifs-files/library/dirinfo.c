@@ -1,8 +1,4 @@
 #include "helperfunctions.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 // get information about a requested directory
 int SIFS_dirinfo(const char *volumename, const char *pathname,
