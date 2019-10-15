@@ -50,7 +50,7 @@ char *find_name(const char *pathname)
     }
     else
     {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH);
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH); //return pathname straightaway? 
         strcpy(directory_name, pathname);
     }
     return directory_name;
@@ -104,6 +104,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
         return 0;
     }
     char *path_name = malloc(SIFS_MAX_NAME_LENGTH); 
+    char *copy = path_name; // used to free the pointer
     strcpy(path_name, pathname);
     if (*pathname == '/')
     {
@@ -151,6 +152,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
 
+    free(copy);
     fclose(fp);
     return parent_blockID;
 }

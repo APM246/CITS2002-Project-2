@@ -6,21 +6,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-char *find__name(const char *pathname)
-{
-    char *directory_name;
-    if ((directory_name = strrchr(pathname, '/')) != NULL)
-    {
-        directory_name++; // move one char past '/'
-    }
-    else
-    {
-        directory_name = malloc(32);
-        strcpy(directory_name, pathname);
-    }
-    return directory_name;
-}
-
 int main(int argc, char *argv[])
 {
     if (argc != 4)

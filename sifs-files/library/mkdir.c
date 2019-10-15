@@ -34,6 +34,19 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         return 1;
     }
 
+    // CHECK IF PARENT BLOCK HAS NO SPACE LEFT FOR ENTRIES
+    FILE *fp = fopen(volumename, "r+");
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
+    fseek(fp, jump, SEEK_SET);
+    SIFS_DIRBLOCK dir;
+    fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
+    if (dir.nentries == SIFS_MAX_ENTRIES)
+    {
+        SIFS_errno = SIFS_EMAXENTRY;
+        return 1;
+    }
+    
     // CREATE THE NEW DIRECTORY BLOCK
     SIFS_DIRBLOCK new_dir; 
     strcpy(new_dir.name, directory_name);   
@@ -49,16 +62,10 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     }
     
     // WRITE DIRECTORY BLOCK TO VOLUME 
-    FILE *fp = fopen(volumename, "r+");
     fseek(fp, -blocksize*(nblocks-block_ID), SEEK_END);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
 
     // UPDATE MODTIME, ENTRIES AND NENTRIES OF PARENT DIRECTORY 
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
-    fseek(fp, jump, SEEK_SET);
-    SIFS_DIRBLOCK dir;
-    fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
     dir.entries[dir.nentries].blockID = block_ID; 
     dir.nentries++; 
     dir.modtime = time(NULL);
