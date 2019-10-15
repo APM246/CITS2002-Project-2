@@ -5,6 +5,13 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc != 3)
+    {
+        //printf("Incorrect number of arguments");
+        fprintf(stderr, "Incorrect number of arguments");
+        return 1;
+    }
+
     size_t length;
     time_t modtime;
 

@@ -71,12 +71,13 @@ char *extract_start_of_pathname(const char *pathname)
     {
         result = malloc(len + 1); //null byte 
         strncpy(result, pathname, len + 1);
-        *(result + len) = '\0'; 
+        *(result + len) = '\0';             // return pathname doesn't work? 
     }
     
     return result;
 }
 
+// RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES (fix) 
 int get_number_of_slashes(const char* pathname)
 {
     char *path_name = malloc(sizeof(pathname));
@@ -134,7 +135,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     do
     {
         fread(&parent_buffer, sizeof(parent_buffer), 1, fp);
-        for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
+        for (int i = 0; i < SIFS_MAX_ENTRIES; i++) //change to nentries?
         {
             child_blockID = parent_buffer.entries[i].blockID;
             fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + child_blockID*blocksize, SEEK_SET);
@@ -148,13 +149,14 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
                 n_iterations++;
                 break;
             }    
+            //if (i == SIFS_MAX_ENTRIES - 1) return -1; //change to nentries?
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
 
     free(copy);
     fclose(fp);
-    return parent_blockID;
+    return parent_blockID; 
 }
 
 // read bitmap through this function as well, add extra paramter 

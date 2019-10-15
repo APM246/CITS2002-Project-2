@@ -59,12 +59,19 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }    
 
+    // THROW ERROR IF NAME IS TOO LONG OR FILENAME PROVIDED IS JUST "/"
+    if ((strlen(find_name(pathname)) + 1) > SIFS_MAX_NAME_LENGTH || (strlen(pathname) == 1 && *pathname == '/'))
+    {
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    } 
+
     // ACCESS VOLUME INFORMATION
     int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
-    // CHECK VALIDITY OF PATHNAME  
-    char *start_of_pathname = extract_start_of_pathname(pathname);
+    // CHECK VALIDITY OF PATHNAME - add to other functions  
+    char *start_of_pathname = extract_start_of_pathname(pathname); //free it?
     if (strlen(start_of_pathname) != 1)
     {
         if (find_blockID(volumename, start_of_pathname, nblocks, blocksize) == -1)
@@ -73,6 +80,14 @@ int SIFS_writefile(const char *volumename, const char *pathname,
             return 1;
         }
     }
+
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    /*if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == -1)
+    {
+        printf("\n%i\n", parent_blockID);
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }*/
 
     // FILE WITH THAT NAME ALREADY EXISTS 
     if (find_blockID(volumename, pathname, nblocks, blocksize) != -1)
@@ -160,17 +175,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
     fwrite(&fileblock, sizeof(fileblock), 1, fp);
 
-    // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY
-    int parent_blockID;
-    if (get_number_of_slashes(pathname) > 0)
-    {
-        parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
-    }
-    else 
-    {
-        parent_blockID = 0; //root 
-    }
-
+    // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY 
     size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize;
     fseek(fp, jump, SEEK_SET);
     SIFS_DIRBLOCK dirblock;
