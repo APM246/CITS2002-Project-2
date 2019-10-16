@@ -12,6 +12,7 @@
 #define NO_CONTIGUOUS_BLOCKS -1 // No contiguous blocks of memory found to store data blocks 
 #define NO_SUCH_BLOCKID -1 // There is no directory or file entry with that pathname 
 #define NO_SUCH_FILENAME -1 // There is no file entry with that file name 
+#define MEMORY_ALLOCATION_FAILED -2 // NULL pointer returned from malloc()
 
 //                          HELPER FUNCTIONS CATEGORISED 
 
@@ -26,7 +27,6 @@ extern int change_bitmap(const char *volumename, char type, int *blockID, int nb
 // ----------------------------------------------------------------------- PATHNAME 
 
 extern char *find_name(const char *pathname);
-extern char *extract_start_of_pathname(const char *pathname);
 extern int get_number_of_slashes(const char* pathname);
 
 // ----------------------------------------------------------------------- blockID

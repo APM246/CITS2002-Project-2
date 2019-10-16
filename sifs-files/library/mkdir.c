@@ -26,10 +26,15 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     // CHECK IF PATHNAME IS VALID
     FILE *fp = fopen(volumename, "r+");
-    int parent_blockID;
-    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    if (parent_blockID == NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+    else if (parent_blockID == MEMORY_ALLOCATION_FAILED)
+    {
+        SIFS_errno = SIFS_ENOMEM;
         return 1;
     }
 

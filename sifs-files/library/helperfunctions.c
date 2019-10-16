@@ -47,37 +47,20 @@ char *find_name(const char *pathname)
     }
     else
     {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH); //return pathname straightaway? 
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH); //return pathname straightaway?
         strcpy(directory_name, pathname);
     }
     return directory_name;
 }
 
-
-char *extract_start_of_pathname(const char *pathname)
-{
-    char *result;
-    int len = strrchr(pathname, '/') - pathname;
-    if (len == 0)
-    {
-        result = malloc(2);
-        result[0] = '/';
-        result[1] = '\0';
-    }
-    else 
-    {
-        result = malloc(len + 1); //null byte 
-        strncpy(result, pathname, len + 1);
-        *(result + len) = '\0';             // return pathname doesn't work? 
-    }
-    
-    return result;
-}
-
 // RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES (fix) 
 int get_number_of_slashes(const char* pathname)
 {
-    char *path_name = malloc(sizeof(pathname));
+    char *path_name = malloc(sizeof(pathname)); 
+    if (path_name == NULL)
+    {
+        return MEMORY_ALLOCATION_FAILED;
+    }
     strcpy(path_name, pathname);
     int number = 0;
     char delimiter[] = "/";
@@ -85,10 +68,9 @@ int get_number_of_slashes(const char* pathname)
     {
         return 0;
     }
-
+    
     while (strtok(NULL, delimiter) != NULL) number++;
     free(path_name);
-    
     return number;
 }
 
@@ -96,11 +78,16 @@ int get_number_of_slashes(const char* pathname)
 
 int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
-    int max_iterations;
-    if ((max_iterations = get_number_of_slashes(pathname)) == 0) 
+    int max_iterations = get_number_of_slashes(pathname);
+    if (max_iterations == 0) 
     {
         return 0;
     }
+    else if (max_iterations == MEMORY_ALLOCATION_FAILED) 
+    {
+        return NO_SUCH_BLOCKID;
+    }
+
     char *path_name = malloc(SIFS_MAX_NAME_LENGTH); 
     char *copy = path_name; // used to free the pointer
     strcpy(path_name, pathname);
@@ -184,7 +171,6 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
             fread(&entry_dirblock, sizeof(entry_dirblock), 1, fp);
             if (strcmp(entry_dirblock.name, directory_name) == 0) 
             {
-                
                 return entry_blockID;
             }
         }
@@ -196,7 +182,6 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
             fread(&entry_file, sizeof(entry_file), 1, fp);
             if (strcmp(entry_file.filenames[index], directory_name) == 0)
             {
-                // add bitmap parameter assignment via pointer 
                 return entry_blockID;
             }
         }
