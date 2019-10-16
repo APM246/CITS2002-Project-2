@@ -47,7 +47,7 @@ char *find_name(const char *pathname)
     }
     else
     {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH); //return pathname straightaway?
+        directory_name = malloc(SIFS_MAX_NAME_LENGTH); 
         strcpy(directory_name, pathname);
     }
     return directory_name;
@@ -149,7 +149,11 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
 {
     char *directory_name = find_name(pathname);
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); //if (parent_blockID == -1) return -1;
+    int parent_blockID;
+    if ((parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
+    {
+        return NO_SUCH_BLOCKID;
+    } 
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
     SIFS_DIRBLOCK parent_dirblock; 
