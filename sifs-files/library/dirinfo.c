@@ -39,7 +39,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         return 1;
     }
 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(blockID);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     *nentries = dirblock.nentries;
@@ -59,7 +59,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         char bitmap[nblocks]; 
         fread(bitmap, sizeof(bitmap), 1, fp);
         SIFS_BIT bit = bitmap[entry_ID];
-        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + entry_ID*blocksize, SEEK_SET);
+        fseek_to_blockID(entry_ID);
         
         if (bit == SIFS_DIR)
         {

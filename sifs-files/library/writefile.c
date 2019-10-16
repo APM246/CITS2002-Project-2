@@ -84,8 +84,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
 
     // CHECK IF PARENT BLOCK HAS NO SPACE LEFT FOR ENTRIES
     FILE *fp = fopen(volumename, "r+");
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
-    fseek(fp, jump, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
     if (dir.nentries == SIFS_MAX_ENTRIES)
@@ -106,7 +105,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         if (bitmap[i] == SIFS_FILE)
         {
             SIFS_FILEBLOCK fb;
-            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
+            fseek_to_blockID(i);
             fread(&fb, sizeof(SIFS_FILEBLOCK), 1, fp);
             if (memcmp(fb.md5, MD5buffer, MD5_BYTELEN) == 0)
             {
@@ -146,7 +145,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         memcpy(&fileblock.md5, MD5buffer, MD5_BYTELEN); 
 
         // WRITE THE ACTUAL FILE TO THE VOLUME
-        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + firstblockID*blocksize, SEEK_SET);
+        fseek_to_blockID(firstblockID);
         fwrite(data, nbytes, 1, fp);
 
         // UPDATE BITMAP
@@ -162,7 +161,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     
     else
     {
-        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
+        fseek_to_blockID(fileblockID);
         fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
 
         // NO SPACE LEFT IN FILEBLOCK (FILENAMES ARRAY)
@@ -176,11 +175,11 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     }
     
     // WRITE THE FILEBLOCK TO THE VOLUME 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + fileblockID*blocksize, SEEK_SET);
+    fseek_to_blockID(fileblockID);
     fwrite(&fileblock, sizeof(fileblock), 1, fp);
 
     // UPDATE PARENT DIRECTORY - MODTIME, NENTRIES AND ENTRIES ARRAY 
-    fseek(fp, jump, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     dirblock.modtime = time(NULL);
@@ -189,7 +188,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     dirblock.nentries++;
     
     // WRITE PARENT DIRECTORY TO VOLUME
-    fseek(fp, jump, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fwrite(&dirblock, sizeof(dirblock), 1, fp);
 
     fclose(fp);

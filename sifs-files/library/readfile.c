@@ -42,7 +42,7 @@ int SIFS_readfile(const char *volumename, const char *pathname,
     }
 
     // ACQUIRE FIRSTBLOCKID
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(blockID);
     SIFS_FILEBLOCK fileblock;
     fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
     int firstblockID = fileblock.firstblockID;
@@ -50,7 +50,7 @@ int SIFS_readfile(const char *volumename, const char *pathname,
 
     // ALLOCATE MEMORY FOR BUFFER AND COPY INTO
     char *buffer = malloc(*nbytes);
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + firstblockID*blocksize, SEEK_SET);
+    fseek_to_blockID(firstblockID);
     fread(buffer, *nbytes, 1, fp);
 
     // ASSIGN TO DATA pointer

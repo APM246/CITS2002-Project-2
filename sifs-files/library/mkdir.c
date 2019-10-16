@@ -45,9 +45,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         return 1;
     }
     
-    // CHECK IF PARENT BLOCK HAS NO SPACE LEFT FOR ENTRIES
-    size_t jump = sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize; 
-    fseek(fp, jump, SEEK_SET);
+    // CHECK IF PARENT BLOCK HAS NO SPACE LEFT FOR ENTRIES 
+    fseek_to_blockID(parent_blockID);
     SIFS_DIRBLOCK dir;
     fread(&dir, sizeof(SIFS_DIRBLOCK), 1, fp);
     if (dir.nentries == SIFS_MAX_ENTRIES)
@@ -78,7 +77,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     dir.entries[dir.nentries].blockID = block_ID; 
     dir.nentries++; 
     dir.modtime = time(NULL);
-    fseek(fp, jump, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fwrite(&dir, sizeof dir, 1, fp);
     fclose(fp); 
 

@@ -40,7 +40,7 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
         return 1;
     }
 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(blockID);
     SIFS_FILEBLOCK fileblock;
     fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
     *length = fileblock.length;

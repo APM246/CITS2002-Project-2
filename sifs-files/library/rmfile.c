@@ -44,12 +44,12 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     // OBTAIN INFO ABOUT NENTRIES 
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     SIFS_DIRBLOCK dirblock;
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     int nentries = dirblock.nentries; 
 
     // UPDATE FILEBLOCK (EITHER REMOVE IF LAST ENTRY OR UPDATE VALUES)
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(blockID);
     SIFS_FILEBLOCK fileblock;
     fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp); 
     uint32_t fileindex; 
@@ -62,7 +62,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     {        
         // REMOVE DATABLOCK(S) FROM VOLUME 
         SIFS_BLOCKID firstblockID = fileblock.firstblockID; 
-        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + firstblockID*blocksize, SEEK_SET);
+        fseek_to_blockID(firstblockID);
         char zeroes[fileblock.length];
         memset(zeroes, 0, sizeof(zeroes));
         fwrite(zeroes, sizeof(zeroes), 1, fp); 
@@ -88,11 +88,11 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     }
     
     // WRITE FILE BLOCK BACK TO VOLUME
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(blockID);
     fwrite(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);
 
     //UPDATE PARENT DIRECTORY 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
     for (int i = 0; i < nentries; i++)   
     {
@@ -115,7 +115,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     dirblock.nentries--;
 
     // WRITE BACK TO VOLUME 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fwrite(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
 
     fclose(fp);

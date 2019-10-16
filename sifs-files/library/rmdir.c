@@ -40,7 +40,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         return 1;
     }
 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + block_ID*blocksize, SEEK_SET);
+    fseek_to_blockID(block_ID);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(dirblock), 1, fp);
 
@@ -59,14 +59,14 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     fwrite(bitmap, sizeof(bitmap), 1, fp);
     
     // clear directory block from volume 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + block_ID*blocksize, SEEK_SET);
+    fseek_to_blockID(block_ID);
     memset(&dirblock, 0, sizeof(dirblock)); 
     fwrite(&dirblock, sizeof(dirblock), 1, fp);
 
     // update 3 fields of parent directory 
     SIFS_DIRBLOCK parentblock;
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fread(&parentblock, sizeof(parentblock), 1, fp);
     int nentries = parentblock.nentries;
     for (int i = 0; i < SIFS_MAX_ENTRIES; i++)   //change this to nentries of parent block
@@ -88,7 +88,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     parentblock.entries[nentries - 1].fileindex = 0;
     parentblock.nentries--;
     parentblock.modtime = time(NULL);
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     fwrite(&parentblock, sizeof(parentblock), 1, fp);
 
     fclose(fp);
