@@ -4,10 +4,14 @@
 int SIFS_readfile(const char *volumename, const char *pathname,
 		  void **data, size_t *nbytes)
 {
-    // NO SUCH VOLUME 
-    if (access(volumename, F_OK) != 0)
+   if (volumename == NULL || pathname == NULL)
     {
-        SIFS_errno	= SIFS_ENOVOL;
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
+    if (!check_valid_volume(volumename))
+    {
         return 1;
     }
 

@@ -3,13 +3,16 @@
 // remove an existing directory from an existing volume
 int SIFS_rmdir(const char *volumename, const char *pathname)
 {
-    // NO SUCH VOLUME 
-    if (access(volumename, F_OK) != 0)
+    if (volumename == NULL || pathname == NULL)
     {
-        SIFS_errno	= SIFS_ENOVOL;
+        SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    if (!check_valid_volume(volumename))
+    {
+        return 1;
+    }
     // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
     if (strlen(pathname) == 1 && *pathname == '/')
     {

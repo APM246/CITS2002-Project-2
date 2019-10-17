@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <math.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 //                                  
 // ----------------------------------------------------------------------- MACROS 
@@ -38,3 +40,7 @@ extern int find_blockID(const char *volumename, const char *pathname, int nblock
 
 extern void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize);
 extern int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name);
+
+// ----------------------------------------------------------------------- ERROR CHECKING
+
+extern bool check_valid_volume(const char *volumename);

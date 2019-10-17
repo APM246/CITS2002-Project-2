@@ -4,10 +4,14 @@
 int SIFS_fileinfo(const char *volumename, const char *pathname,
 		  size_t *length, time_t *modtime)
 {
-    // NO SUCH VOLUME 
-    if (access(volumename, F_OK) != 0)
+    if (volumename == NULL || pathname == NULL)
     {
-        SIFS_errno	= SIFS_ENOVOL;
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
+    if (!check_valid_volume(volumename))
+    {
         return 1;
     }
 

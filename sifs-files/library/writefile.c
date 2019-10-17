@@ -44,12 +44,16 @@ int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const c
 int SIFS_writefile(const char *volumename, const char *pathname,
 		   void *data, size_t nbytes)
 {
-    // NO SUCH VOLUME 
-    if (access(volumename, F_OK) != 0)
+    if (volumename == NULL || pathname == NULL || data == NULL || nbytes <= 0)
     {
-        SIFS_errno	= SIFS_ENOVOL;
+        SIFS_errno = SIFS_EINVAL;
         return 1;
-    }    
+    }
+
+    if (!check_valid_volume(volumename))
+    {
+        return 1;
+    }   
 
     // ACCESS VOLUME INFORMATION
     int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;

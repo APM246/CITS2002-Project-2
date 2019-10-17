@@ -3,10 +3,14 @@
 // remove an existing file from an existing volume
 int SIFS_rmfile(const char *volumename, const char *pathname)
 {
-    // NO SUCH VOLUME 
-    if (access(volumename, F_OK) != 0)
+   if (volumename == NULL || pathname == NULL)
     {
-        SIFS_errno	= SIFS_ENOVOL;
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    }
+
+    if (!check_valid_volume(volumename))
+    {
         return 1;
     }
 

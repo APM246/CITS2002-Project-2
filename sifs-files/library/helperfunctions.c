@@ -1,5 +1,7 @@
 #include "helperfunctions.h"
 
+// -----------------------------------------------------------------------
+
 void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
@@ -266,4 +268,38 @@ void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BL
 
     // update last spot
     strcpy(fileblock->filenames[nfiles - 1], "");
+}
+
+// -----------------------------------------------------------------------
+
+bool check_valid_volume(const char *volumename)
+{
+    // NO SUCH VOLUME 
+    if (access(volumename, F_OK) != 0)
+    {
+        SIFS_errno	= SIFS_ENOVOL;
+        return false;
+    }
+
+    // CHECK THAT FILE IS A VALID VOLUME BY EXAMINING BLOCKSIZE 
+    FILE *fp = fopen(volumename, "r+");
+    struct stat buf;
+    stat(volumename, &buf);
+    int size = buf.st_size;
+    
+
+    if (size > sizeof(SIFS_VOLUME_HEADER))
+    {
+        SIFS_VOLUME_HEADER header;
+        fread(&header, sizeof(SIFS_VOLUME_HEADER), 1, fp);
+        if (header.blocksize > 1023)
+        {
+            fclose(fp);
+            return true;
+        }
+    }
+
+    fclose(fp);
+    SIFS_errno = SIFS_ENOTVOL;
+    return false;   
 }

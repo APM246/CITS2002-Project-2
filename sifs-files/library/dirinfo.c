@@ -4,10 +4,15 @@
 int SIFS_dirinfo(const char *volumename, const char *pathname,
                  char ***entrynames, uint32_t *nentries, time_t *modtime)
 {
-    // NO SUCH VOLUME 
-    if (access(volumename, F_OK) != 0)
+    // CHECK NULL ARGUMENTS
+    if (volumename == NULL || pathname == NULL)
     {
-        SIFS_errno	= SIFS_ENOVOL;
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
+    } 
+
+    if (!check_valid_volume(volumename))
+    {
         return 1;
     }
 
