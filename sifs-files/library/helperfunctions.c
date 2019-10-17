@@ -66,6 +66,7 @@ int get_number_of_slashes(const char* pathname)
     char delimiter[] = "/";
     if (strcmp(strtok(path_name, delimiter), pathname) == 0) 
     {
+        free(path_name);
         return 0;
     }
     
@@ -87,14 +88,15 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     {
         return NO_SUCH_BLOCKID;
     }
-
-    char *path_name = malloc(SIFS_MAX_NAME_LENGTH); 
+    fprintf(stderr, "\nBEFORE\n");
+    char *path_name = malloc(SIFS_MAX_NAME_LENGTH); fprintf(stderr, "\nAFTER\n"); 
     char *copy = path_name; // used to free the pointer
     strcpy(path_name, pathname);
     if (*pathname == '/')
     {
         if (strlen(pathname) == 1) 
         {
+            free(copy);
             return 0; // pathname provided is the root directory 
         }
         else 
@@ -135,7 +137,11 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
             }
 
             //  PATHNAME COMPONENT DOESN'T EXIST 
-            if (i == SIFS_MAX_ENTRIES - 1) return NO_SUCH_BLOCKID; //change to nentries?
+            if (i == SIFS_MAX_ENTRIES - 1) 
+            {
+                free(copy);
+                return NO_SUCH_BLOCKID; //change to nentries?
+            }
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
