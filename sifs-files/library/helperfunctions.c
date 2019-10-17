@@ -48,12 +48,12 @@ char *find_name(const char *pathname)
     else
     {
         directory_name = malloc(SIFS_MAX_NAME_LENGTH); 
-        strcpy(directory_name, pathname);
+        strcpy(directory_name, pathname); //return modified pathname or check if null (where function is called) to throw MEM?
     }
     return directory_name;
 }
 
-// RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES (fix) 
+// RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES  
 int get_number_of_slashes(const char* pathname)
 {
     char *path_name = malloc(sizeof(pathname)); 

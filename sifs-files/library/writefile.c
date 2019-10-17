@@ -144,7 +144,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         fileblock.nfiles = 1;
         memcpy(&fileblock.md5, MD5buffer, MD5_BYTELEN); 
 
-        // WRITE THE ACTUAL FILE TO THE VOLUME
+        // WRITE THE ACTUAL FILE (DATA BLOCKS) TO THE VOLUME
         fseek_to_blockID(firstblockID);
         fwrite(data, nbytes, 1, fp);
 
