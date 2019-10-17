@@ -44,13 +44,13 @@ char *find_name(const char *pathname)
     if ((directory_name = strrchr(pathname, '/')) != NULL)
     {
         directory_name++; // move one char past '/'
+        return directory_name;
     }
     else
     {
-        directory_name = malloc(SIFS_MAX_NAME_LENGTH); 
-        strcpy(directory_name, pathname); //return modified pathname or check if null (where function is called) to throw MEM?
+        return (char *) pathname; //return pathname since it doesn't have any slashes
+        // still satisfies "const" property 
     }
-    return directory_name;
 }
 
 // RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES  
