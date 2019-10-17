@@ -56,7 +56,7 @@ char *find_name(const char *pathname)
 // RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES  
 int get_number_of_slashes(const char* pathname)
 {
-    char *path_name = malloc(sizeof(pathname)); 
+    char *path_name = malloc(strlen(pathname) + 1); 
     if (path_name == NULL)
     {
         return MEMORY_ALLOCATION_FAILED;
@@ -69,9 +69,9 @@ int get_number_of_slashes(const char* pathname)
         free(path_name);
         return 0;
     }
-    
-    while (strtok(NULL, delimiter) != NULL) number++;
-    free(path_name);
+
+    while (strtok(NULL, delimiter) != NULL) number++; 
+    free(path_name); 
     return number;
 }
 
@@ -88,21 +88,12 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     {
         return NO_SUCH_BLOCKID;
     }
-    fprintf(stderr, "\nBEFORE\n");
-    char *path_name = malloc(SIFS_MAX_NAME_LENGTH); fprintf(stderr, "\nAFTER\n"); 
-    char *copy = path_name; // used to free the pointer
+    
+    char path_name[SIFS_MAX_NAME_LENGTH];
     strcpy(path_name, pathname);
-    if (*pathname == '/')
+    if (strlen(path_name) == 1 && path_name[0] == '/') 
     {
-        if (strlen(pathname) == 1) 
-        {
-            free(copy);
-            return 0; // pathname provided is the root directory 
-        }
-        else 
-        {
-            path_name++; //skip past first '/'
-        }
+        return 0; // pathname provided is the root directory 
     }
 
     FILE *fp = fopen(volumename, "r+");
@@ -139,14 +130,14 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
             //  PATHNAME COMPONENT DOESN'T EXIST 
             if (i == SIFS_MAX_ENTRIES - 1) 
             {
-                free(copy);
+                //free(copy);
                 return NO_SUCH_BLOCKID; //change to nentries?
             }
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
 
-    free(copy);
+    //free(copy);
     fclose(fp);
     return parent_blockID; 
 }
