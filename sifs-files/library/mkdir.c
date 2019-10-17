@@ -70,7 +70,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     }
     
     // WRITE DIRECTORY BLOCK TO VOLUME 
-    fseek(fp, -blocksize*(nblocks-block_ID), SEEK_END);
+    fseek_to_blockID(block_ID);
     fwrite(&new_dir, sizeof new_dir, 1, fp);
 
     // UPDATE MODTIME, ENTRIES AND NENTRIES OF PARENT DIRECTORY 
