@@ -29,12 +29,13 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     } 
     
     //obtain information about nblocks and blocksize
-    int blocksize, nblocks;
+    size_t blocksize;
+    uint32_t nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // CHECK IF PATHNAME IS VALID
     FILE *fp = fopen(volumename, "r+");
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
+    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize);
     if (parent_blockID == NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_EINVAL;
@@ -70,7 +71,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     new_dir.nentries = 0;
 
     // CHANGE FROM 'u' TO 'd'. THROW ERROR IF NOT ENOUGH SPACE
-    int block_ID;
+    SIFS_BLOCKID block_ID;
     if (change_bitmap(volumename, SIFS_DIR, &block_ID, nblocks) != 0)
     {
         SIFS_errno = SIFS_ENOSPC;

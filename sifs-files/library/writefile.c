@@ -1,7 +1,7 @@
 #include "helperfunctions.h"
 
 // find contiguous blocks to store contents of files - returns first blockID of data blocks 
-int find_contiguous_blocks(size_t nbytes, size_t blocksize, int nblocks, const char *volumename, int *nblocks_needed)
+int find_contiguous_blocks(size_t nbytes, size_t blocksize, uint32_t nblocks, const char *volumename, uint32_t *nblocks_needed)
 {
     *nblocks_needed = ceil(((double) nbytes)/blocksize); 
     FILE *fp = fopen(volumename, "r"); 
@@ -56,7 +56,9 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     }   
 
     // ACCESS VOLUME INFORMATION
-    int nblocks, blocksize, fileblockID, firstblockID, nblocks_needed;
+    uint32_t nblocks, nblocks_needed;
+    size_t blocksize;
+    SIFS_BLOCKID fileblockID, firstblockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
      // THROW ERROR IF NAME IS TOO LONG OR FILENAME PROVIDED IS JUST "/"

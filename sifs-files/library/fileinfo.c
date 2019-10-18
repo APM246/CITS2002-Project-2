@@ -22,7 +22,9 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
         return 1;
     }
 
-    int blocksize, nblocks, blockID;
+    size_t blocksize;
+    uint32_t nblocks;
+    SIFS_BLOCKID blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks); 
 
      // NO SUCH FILE EXISTS 

@@ -21,7 +21,9 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     }
 
     FILE *fp = fopen(volumename, "r+");
-    int nblocks, blocksize, block_ID;
+    uint32_t nblocks;
+    size_t blocksize;
+    SIFS_BLOCKID block_ID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // NO SUCH DIRECTORY EXISTS 
@@ -68,7 +70,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
 
     // update 3 fields of parent directory 
     SIFS_DIRBLOCK parentblock;
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
+    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     fseek_to_blockID(parent_blockID);
     fread(&parentblock, sizeof(parentblock), 1, fp);
     int nentries = parentblock.nentries;

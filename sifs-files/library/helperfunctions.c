@@ -2,7 +2,7 @@
 
 // -----------------------------------------------------------------------
 
-void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks)
+void get_volume_header_info(const char *volumename, size_t *blocksize, uint32_t *nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
     char buffer[sizeof(SIFS_VOLUME_HEADER)];
@@ -14,7 +14,7 @@ void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks
 
 // -----------------------------------------------------------------------
 
-int change_bitmap(const char *volumename, char type, int *blockID, int nblocks)
+int change_bitmap(const char *volumename, char type, SIFS_BLOCKID *blockID, uint32_t nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
@@ -79,7 +79,7 @@ int get_number_of_slashes(const char* pathname)
 
 // --------------------------------------------------------- blockID 
 
-int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
+int find_parent_blockID(const char *volumename, const char *pathname, uint32_t nblocks, size_t blocksize)
 {
     int max_iterations = get_number_of_slashes(pathname);
     if (max_iterations == 0) 
@@ -148,7 +148,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
 }
 
 // read bitmap through this function as well, add extra paramter 
-int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize)
+int find_blockID(const char *volumename, const char *pathname, uint32_t nblocks, size_t blocksize)
 {
     char *directory_name = find_name(pathname);
     int parent_blockID;

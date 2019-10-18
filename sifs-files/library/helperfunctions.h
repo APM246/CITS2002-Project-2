@@ -21,11 +21,11 @@
 
 // ----------------------------------------------------------------------- VOLUME HEADER INFO
 
-extern void get_volume_header_info(const char *volumename, int *blocksize, int *nblocks);
+extern void get_volume_header_info(const char *volumename, size_t *blocksize, uint32_t *nblocks);
 
 // ----------------------------------------------------------------------- CHANGING BITMAP
 
-extern int change_bitmap(const char *volumename, char type, int *blockID, int nblocks);
+extern int change_bitmap(const char *volumename, char type, SIFS_BLOCKID *blockID, uint32_t nblocks);
 
 // ----------------------------------------------------------------------- PATHNAME 
 
@@ -34,8 +34,8 @@ extern int get_number_of_slashes(const char* pathname);
 
 // ----------------------------------------------------------------------- blockID
 
-extern int find_parent_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize);
-extern int find_blockID(const char *volumename, const char *pathname, int nblocks, int blocksize);
+extern int find_parent_blockID(const char *volumename, const char *pathname, uint32_t nblocks, size_t blocksize);
+extern int find_blockID(const char *volumename, const char *pathname, uint32_t nblocks, size_t blocksize);
 
 // ----------------------------------------------------------------------- FILEBLOCK
 

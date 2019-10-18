@@ -23,7 +23,9 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
 
     // OBTAIN INFORMATION 
     FILE *fp = fopen(volumename, "r+");
-    int nblocks, blocksize, blockID;
+    uint32_t nblocks;
+    size_t blocksize;
+    SIFS_BLOCKID blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
     if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
     {
@@ -46,7 +48,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     }
 
     // OBTAIN INFO ABOUT NENTRIES 
-    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
+    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     SIFS_DIRBLOCK dirblock;
     fseek_to_blockID(parent_blockID);
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);

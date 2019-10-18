@@ -23,7 +23,9 @@ int SIFS_readfile(const char *volumename, const char *pathname,
     }
 
     // ACCESS VOLUME HEADER INFORMATION
-    int blocksize, nblocks, blockID;
+    size_t blocksize;
+    uint32_t nblocks;
+    SIFS_BLOCKID blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
     // NO SUCH FILE EXISTS 
