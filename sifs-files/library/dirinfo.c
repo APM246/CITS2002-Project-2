@@ -18,7 +18,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
 
     size_t blocksize;
     uint32_t nblocks;
-    SIFS_BLOCKID blockID;
+    int blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks); 
 
     // REQUESTING INFO OF ROOT DIRECTORY

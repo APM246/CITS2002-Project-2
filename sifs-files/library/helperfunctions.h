@@ -7,7 +7,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-//                                  
+// SIFS_BLOCKID datatype not used because blockID and parent_blockID variables can be 
+// set to negative values (to indicate failure)                      
+
+
 // ----------------------------------------------------------------------- MACROS 
 
 #define fseek_to_blockID(ID)  fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + ID*blocksize, SEEK_SET) 
@@ -25,7 +28,7 @@ extern void get_volume_header_info(const char *volumename, size_t *blocksize, ui
 
 // ----------------------------------------------------------------------- CHANGING BITMAP
 
-extern int change_bitmap(const char *volumename, char type, SIFS_BLOCKID *blockID, uint32_t nblocks);
+extern int change_bitmap(const char *volumename, char type, int *blockID, uint32_t nblocks);
 
 // ----------------------------------------------------------------------- PATHNAME 
 
@@ -39,7 +42,7 @@ extern int find_blockID(const char *volumename, const char *pathname, uint32_t n
 
 // ----------------------------------------------------------------------- FILEBLOCK
 
-extern void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize);
+extern void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, int blockID, uint32_t nblocks, size_t blocksize);
 extern int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name);
 
 // ----------------------------------------------------------------------- ERROR CHECKING

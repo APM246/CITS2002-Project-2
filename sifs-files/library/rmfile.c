@@ -25,7 +25,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     FILE *fp = fopen(volumename, "r+");
     uint32_t nblocks;
     size_t blocksize;
-    SIFS_BLOCKID blockID;
+    int blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
     if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
     {
@@ -48,7 +48,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     }
 
     // OBTAIN INFO ABOUT NENTRIES 
-    SIFS_BLOCKID parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
+    int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     SIFS_DIRBLOCK dirblock;
     fseek_to_blockID(parent_blockID);
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
@@ -67,7 +67,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     if (fileblock.nfiles == 1)
     {        
         // REMOVE DATABLOCK(S) FROM VOLUME 
-        SIFS_BLOCKID firstblockID = fileblock.firstblockID; 
+        int firstblockID = fileblock.firstblockID; 
         fseek_to_blockID(firstblockID);
         char zeroes[fileblock.length];
         memset(zeroes, 0, sizeof(zeroes));

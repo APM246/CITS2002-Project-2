@@ -14,7 +14,7 @@ void get_volume_header_info(const char *volumename, size_t *blocksize, uint32_t 
 
 // -----------------------------------------------------------------------
 
-int change_bitmap(const char *volumename, char type, SIFS_BLOCKID *blockID, uint32_t nblocks)
+int change_bitmap(const char *volumename, char type, int *blockID, uint32_t nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
@@ -222,7 +222,7 @@ int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)
     THE ENTRY IN THE ENTRIES ARRAY WHICH CORRESPONDS TO NAME3 MUST HAVE ITS FILEINDEX VALUE
     DECREMENTED 
 */
-void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize)
+void decrement_fileindex(FILE *fp, int fileindex, int blockID, uint32_t nblocks, size_t blocksize)
 {
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     char bitmap[nblocks];
@@ -252,7 +252,7 @@ void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t
     }
 }
 
-void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BLOCKID blockID, uint32_t nblocks, size_t blocksize)
+void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, int blockID, uint32_t nblocks, size_t blocksize)
 {
     uint32_t nfiles = fileblock->nfiles; //value hasn't been decremented yet 
 

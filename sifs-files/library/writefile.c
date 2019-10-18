@@ -58,7 +58,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     // ACCESS VOLUME INFORMATION
     uint32_t nblocks, nblocks_needed;
     size_t blocksize;
-    SIFS_BLOCKID fileblockID, firstblockID;
+    int fileblockID, firstblockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
 
      // THROW ERROR IF NAME IS TOO LONG OR FILENAME PROVIDED IS JUST "/"
