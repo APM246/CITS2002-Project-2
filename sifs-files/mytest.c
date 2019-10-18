@@ -128,6 +128,9 @@ int main(int argc, char *argv[])
     printf("\nCheck visual. Order should be test.txt, wtf (index 1) and supersuperlongname (index 2).\n\n");
     char *nullptr = NULL;
 
+    void *buffer1;
+    size_t nbytes1;
+
     // ERROR CHECKING
     SIFS_perror(NULL);
     SIFS_writefile("wrooong", "/dir6/interesting.txt", data, size); SIFS_perror("No such volume:");
@@ -138,8 +141,9 @@ int main(int argc, char *argv[])
     SIFS_rmdir(volumename, "////dir6"); SIFS_perror("Directory is not empty");
     SIFS_rmfile(volumename, "/dir1/subdir2"); SIFS_perror("Not a file");
     SIFS_dirinfo(volumename, "/dir2/woo.c", &entrynames, &nentries, &modtime); SIFS_perror("Not a directory");
-    //SIFS_readfile("project testing/shouldbeunicorn.gif", "/dir2/woo.c", &buffer, &nbytes); SIFS_perror("Not a volume");
-
+    SIFS_readfile("sample volumes/photos", "/dir2/woo.c", &buffer1, &nbytes1); SIFS_perror("Not a volume");
+    data = writefile("tocopy/random2.txt", &size);
+    SIFS_writefile("project testing/shouldbeunicorn.gif", "/dir2/woo.c", data, size); SIFS_perror("Not a volume");
 
     free(data);
     return 0;

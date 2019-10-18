@@ -285,7 +285,7 @@ bool check_valid_volume(const char *volumename)
         return false;
     }
 
-    FILE *fp = fopen(volumename, "r+");
+    FILE *fp = fopen(volumename, "r");
     if (fp == NULL)
     {
         SIFS_errno = SIFS_ENOTVOL;
@@ -299,10 +299,11 @@ bool check_valid_volume(const char *volumename)
 
     if (size > sizeof(SIFS_VOLUME_HEADER))
     {
-        // CHECK THAT FILE IS A VALID VOLUME BY EXAMINING BLOCKSIZE (SECOND TEST)
-        SIFS_VOLUME_HEADER header;
-        fread(&header, sizeof(SIFS_VOLUME_HEADER), 1, fp);
-        if (header.blocksize > 1023)
+        // CHECK THAT FILE IS A VALID VOLUME BY EXAMINING FIRST BIT OF BITMAP (SECOND TEST)
+        char bit;
+        fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
+        fread(&bit, sizeof(SIFS_BIT), 1, fp);
+        if (bit == SIFS_DIR)
         {
             fclose(fp);
             return true;
