@@ -124,12 +124,14 @@ int main(int argc, char *argv[])
     SIFS_writefile(volumename, "dir6///////////////supersuperlongname", data, size);
     
 
-    //SIFS_rmfile(volumename, "/diar7/deep///test1.txt");
+    SIFS_rmfile(volumename, "/diar7/deep///test1.txt");
     printf("\nCheck visual. Order should be test.txt, wtf (index 1) and supersuperlongname (index 2).\n\n");
+    char *nullptr = NULL;
 
     // ERROR CHECKING
     SIFS_perror(NULL);
     SIFS_writefile("wrooong", "/dir6/interesting.txt", data, size); SIFS_perror("No such volume:");
+    SIFS_mkdir("project testing/propertest", nullptr); SIFS_perror("Invalid argument");
     SIFS_fileinfo("project testing/propertest", "diar7/deep/doesnexist.txt", &length, &modtime); SIFS_perror("No such file or directory entry");
     SIFS_mkdir(volumename, "/dir2//wo7/nope"); SIFS_perror("Invalid argument");
     SIFS_writefile(volumename, "diar4/three/test.txt", data, size); SIFS_perror("Volume, file or directory already exists");

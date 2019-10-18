@@ -72,7 +72,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     fseek_to_blockID(parent_blockID);
     fread(&parentblock, sizeof(parentblock), 1, fp);
     int nentries = parentblock.nentries;
-    for (int i = 0; i < SIFS_MAX_ENTRIES; i++)   //change this to nentries of parent block
+    for (int i = 0; i < nentries; i++)  
     {
         if (parentblock.entries[i].blockID == block_ID)
         {

@@ -99,7 +99,8 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     }
 
     FILE *fp = fopen(volumename, "r+");
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT), SEEK_SET);
+    // FSEEK TO ROOT DIRECTORY TO BEGIN WITH 
+    fseek_to_blockID(0);
 
     char *path;
     int parent_blockID = 0;
@@ -114,26 +115,26 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     do
     {
         fread(&parent_buffer, sizeof(parent_buffer), 1, fp);
-        for (int i = 0; i < SIFS_MAX_ENTRIES; i++) //change to nentries?
+        uint32_t nentries = parent_buffer.nentries;
+        for (int i = 0; i < nentries; i++) 
         {
             child_blockID = parent_buffer.entries[i].blockID;
-            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + child_blockID*blocksize, SEEK_SET);
+            fseek_to_blockID(child_blockID);
             memset(&child_buffer, 0, sizeof(child_buffer));
             fread(&child_buffer, sizeof(child_buffer), 1, fp);
             if (strcmp(child_buffer.name, path) == 0) 
             {
                 parent_blockID = child_blockID;
                 memset(&parent_buffer, 0, sizeof(parent_buffer));
-                fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+                fseek_to_blockID(parent_blockID);
                 n_iterations++;
                 break;
             }
 
             //  PATHNAME COMPONENT DOESN'T EXIST 
-            if (i == SIFS_MAX_ENTRIES - 1) 
+            if (i == nentries - 1) 
             {
-                //free(copy);
-                return NO_SUCH_BLOCKID; //change to nentries?
+                return NO_SUCH_BLOCKID;
             }
         }
     }
@@ -154,7 +155,7 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
         return NO_SUCH_BLOCKID;
     } 
     FILE *fp = fopen(volumename, "r+");
-    fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + parent_blockID*blocksize, SEEK_SET);
+    fseek_to_blockID(parent_blockID);
     SIFS_DIRBLOCK parent_dirblock; 
     fread(&parent_dirblock, sizeof(parent_dirblock), 1, fp);
     int nentries = parent_dirblock.nentries;
@@ -166,7 +167,7 @@ int find_blockID(const char *volumename, const char *pathname, int nblocks, int 
         char bitmap[nblocks]; 
         fread(bitmap, sizeof(bitmap), 1, fp);
         SIFS_BIT type = bitmap[entry_blockID];
-        fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + entry_blockID*blocksize, SEEK_SET);
+        fseek_to_blockID(entry_blockID);
         
         if (type == SIFS_DIR)
         {
@@ -230,10 +231,11 @@ void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t
         if (bitmap[i] == SIFS_DIR)
         {
             SIFS_DIRBLOCK dirblock;
-            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
+            fseek_to_blockID(i);
             fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
+            uint32_t nentries = dirblock.nentries;
 
-            for (int j = 0; j < SIFS_MAX_ENTRIES; j++)
+            for (int j = 0; j < nentries; j++)
             {
                 if (dirblock.entries[j].blockID == blockID && dirblock.entries[j].fileindex > fileindex)
                 {
@@ -242,7 +244,7 @@ void decrement_fileindex(FILE *fp, int fileindex, SIFS_BLOCKID blockID, uint32_t
             }
 
             // WRITE BACK TO VOLUME 
-            fseek(fp, sizeof(SIFS_VOLUME_HEADER) + nblocks*sizeof(SIFS_BIT) + i*blocksize, SEEK_SET);
+            fseek_to_blockID(i);
             fwrite(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);
         }
     }

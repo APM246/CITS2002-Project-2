@@ -1,5 +1,9 @@
 #include "helperfunctions.h"
 
+//  CITS2002 Project 2 2019
+//  Name(s):             Arun Muthu
+//  Student number(s):   22704805
+
 // make a new directory within an existing volume
 int SIFS_mkdir(const char *volumename, const char *pathname)
 {
