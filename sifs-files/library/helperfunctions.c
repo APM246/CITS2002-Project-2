@@ -91,12 +91,13 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
         return NO_SUCH_BLOCKID;
     }
     
-    char path_name[SIFS_MAX_NAME_LENGTH];
-    strcpy(path_name, pathname);
-    if (strlen(path_name) == 1 && path_name[0] == '/') 
+    if (strlen(pathname) == 1 && pathname[0] == '/') 
     {
         return 0; // pathname provided is the root directory 
     }
+
+    char *path_name = malloc(strlen(pathname) + 1);
+    strcpy(path_name, pathname);
 
     FILE *fp = fopen(volumename, "r+");
     // FSEEK TO ROOT DIRECTORY TO BEGIN WITH 
@@ -134,13 +135,14 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
             //  PATHNAME COMPONENT DOESN'T EXIST 
             if (i == nentries - 1) 
             {
+                free(path_name);
                 return NO_SUCH_BLOCKID;
             }
         }
     }
     while ((path = strtok(NULL, delimiter)) != NULL && n_iterations < max_iterations);
 
-    //free(copy);
+    free(path_name);
     fclose(fp);
     return parent_blockID; 
 }
