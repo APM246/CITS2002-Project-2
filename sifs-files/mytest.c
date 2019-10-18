@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
     SIFS_rmdir(volumename, "////dir6"); SIFS_perror("Directory is not empty");
     SIFS_rmfile(volumename, "/dir1/subdir2"); SIFS_perror("Not a file");
     SIFS_dirinfo(volumename, "/dir2/woo.c", &entrynames, &nentries, &modtime); SIFS_perror("Not a directory");
+    //SIFS_readfile("project testing/shouldbeunicorn.gif", "/dir2/woo.c", &buffer, &nbytes); SIFS_perror("Not a volume");
 
 
     free(data);

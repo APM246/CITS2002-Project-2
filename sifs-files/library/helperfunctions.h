@@ -15,6 +15,7 @@
 #define NO_SUCH_BLOCKID -1 // There is no directory or file entry with that pathname 
 #define NO_SUCH_FILENAME -1 // There is no file entry with that file name 
 #define MEMORY_ALLOCATION_FAILED -2 // NULL pointer returned from malloc()
+#define max(x,y) (x) < (y) ? (y) : (x) // returns maximum of two values 
 
 //                          HELPER FUNCTIONS CATEGORISED 
 

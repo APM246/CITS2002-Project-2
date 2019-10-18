@@ -116,7 +116,7 @@ int find_parent_blockID(const char *volumename, const char *pathname, int nblock
     do
     {
         fread(&parent_buffer, sizeof(parent_buffer), 1, fp);
-        uint32_t nentries = parent_buffer.nentries;
+        uint32_t nentries = max(parent_buffer.nentries, 1); // ensures nentries is not 0
         for (int i = 0; i < nentries; i++) 
         {
             child_blockID = parent_buffer.entries[i].blockID;
@@ -274,7 +274,7 @@ void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, SIFS_BL
     strcpy(fileblock->filenames[nfiles - 1], "");
 }
 
-// -----------------------------------------------------------------------
+// ------------------------------------------------------------------- ERROR CHECKING
 
 bool check_valid_volume(const char *volumename)
 {
@@ -285,15 +285,21 @@ bool check_valid_volume(const char *volumename)
         return false;
     }
 
-    // CHECK THAT FILE IS A VALID VOLUME BY EXAMINING BLOCKSIZE 
     FILE *fp = fopen(volumename, "r+");
+    if (fp == NULL)
+    {
+        SIFS_errno = SIFS_ENOTVOL;
+        return false;
+    }
+
+    // ENSURE FILE'S SIZE IS VALID (FIRST TEST)
     struct stat buf;
     stat(volumename, &buf);
     int size = buf.st_size;
-    
 
     if (size > sizeof(SIFS_VOLUME_HEADER))
     {
+        // CHECK THAT FILE IS A VALID VOLUME BY EXAMINING BLOCKSIZE (SECOND TEST)
         SIFS_VOLUME_HEADER header;
         fread(&header, sizeof(SIFS_VOLUME_HEADER), 1, fp);
         if (header.blocksize > 1023)
