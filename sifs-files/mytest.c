@@ -122,7 +122,6 @@ int main(int argc, char *argv[])
 
     data = writefile("tocopy/random2.txt", &size);
     SIFS_writefile(volumename, "dir6///////////////supersuperlongname", data, size);
-    
 
     SIFS_rmfile(volumename, "/diar7/deep///test1.txt");
     printf("\nCheck visual. Order should be test.txt, wtf (index 1) and supersuperlongname (index 2).\n\n");
@@ -130,6 +129,8 @@ int main(int argc, char *argv[])
 
     void *buffer1;
     size_t nbytes1;
+    //SIFS_writefile(volumename, "/diar4//cool")
+    //SIFS_mkdir(volumename, "/diar4/two2");
 
     // ERROR CHECKING
     SIFS_perror(NULL);
