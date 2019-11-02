@@ -7,12 +7,14 @@
 // make a new directory within an existing volume
 int SIFS_mkdir(const char *volumename, const char *pathname)
 {
+    // CHECK NULL ARGUMENTS 
     if (volumename == NULL || pathname == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    // CHECK IF VOLUMENAME IS VALID
     if (!check_valid_volume(volumename))
     {
         return 1;
@@ -28,7 +30,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         return 1;
     } 
     
-    //obtain information about nblocks and blocksize
+    // ACCESS VOLUME HEADER INFORMATION
     size_t blocksize;
     uint32_t nblocks;
     get_volume_header_info(volumename, &blocksize, &nblocks);

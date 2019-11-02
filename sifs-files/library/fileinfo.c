@@ -4,12 +4,14 @@
 int SIFS_fileinfo(const char *volumename, const char *pathname,
 		  size_t *length, time_t *modtime)
 {
+    // CHECK NULL ARGUMENTS 
     if (volumename == NULL || pathname == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    // CHECK IF VOLUMENAME IS VALID
     if (!check_valid_volume(volumename))
     {
         return 1;
@@ -22,6 +24,7 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
         return 1;
     }
 
+    // ACCESS VOLUME HEADER INFORMATION
     size_t blocksize;
     uint32_t nblocks;
     int blockID;
@@ -46,6 +49,7 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
         return 1;
     }
 
+    // ASSIGN VALUES 
     fseek_to_blockID(blockID);
     SIFS_FILEBLOCK fileblock;
     fread(&fileblock, sizeof(SIFS_FILEBLOCK), 1, fp);

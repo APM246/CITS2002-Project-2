@@ -11,11 +11,13 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         return 1;
     } 
 
+    // CHECK IF VOLUMENAME IS VALID
     if (!check_valid_volume(volumename))
     {
         return 1;
     }
 
+    // ACCESS VOLUME HEADER INFORMATION
     size_t blocksize;
     uint32_t nblocks;
     int blockID;
@@ -46,6 +48,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
         return 1;
     }
 
+    // START ASSIGNING VALUES 
     fseek_to_blockID(blockID);
     SIFS_DIRBLOCK dirblock;
     fread(&dirblock, sizeof(SIFS_DIRBLOCK), 1, fp);

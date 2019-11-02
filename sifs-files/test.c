@@ -218,9 +218,9 @@ void test_rmdir_EINVAL(void)
     bool passed = true;
 
     passed = passed && SIFS_rmdir(NULL, NULL) == 1 && SIFS_errno == SIFS_EINVAL;
-    passed = passed && SIFS_rmdir("", NULL) == 1 && SIFS_errno == SIFS_EINVAL;
+    passed = passed && SIFS_rmdir(" ", NULL) == 1 && SIFS_errno == SIFS_EINVAL;
     passed = passed && SIFS_rmdir("volume", "/") == 1 && SIFS_errno == SIFS_EINVAL;
-    passed = passed && SIFS_rmdir("volume", "") == 1 && SIFS_errno == SIFS_EINVAL;
+    passed = passed && SIFS_rmdir("volume", " ") == 1 && SIFS_errno == SIFS_EINVAL;
     passed = passed && SIFS_rmdir("volume", "//////////") == 1 && SIFS_errno == SIFS_EINVAL;
 
     if (passed)

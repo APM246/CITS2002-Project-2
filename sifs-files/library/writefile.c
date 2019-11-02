@@ -1,6 +1,6 @@
 #include "helperfunctions.h"
 
-// find contiguous blocks to store contents of files - returns first blockID of data blocks 
+// FIND CONTIGUOUS BLOCKS TO STORE CONTENTS OF FILES - RETURNS FIRSTBLOCKID 
 int find_contiguous_blocks(size_t nbytes, size_t blocksize, uint32_t nblocks, const char *volumename, uint32_t *nblocks_needed)
 {
     *nblocks_needed = ceil(((double) nbytes)/blocksize); 
@@ -9,12 +9,14 @@ int find_contiguous_blocks(size_t nbytes, size_t blocksize, uint32_t nblocks, co
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fread(bitmap, sizeof(bitmap), 1, fp);
 
-    if (nblocks < *nblocks_needed + 1 + 1)
+    // +2 added for root directory block and fileblock representing the file
+    if (nblocks < *nblocks_needed + 2)
     {
-        return NO_CONTIGUOUS_BLOCKS;
+        return NO_CONTIGUOUS_BLOCKS; 
     }
     
     bool isReserved = true; //reserve for fileblock
+    // KEEP CYCLING THROUGH UNTIL ROW OF UNUSED CONTIGUOUS BLOCKS IS FOUND
     for (int i = 0; i < nblocks; i++)
     {
         for (int j = 0; j < *nblocks_needed; j++)
@@ -44,18 +46,20 @@ int find_contiguous_blocks(size_t nbytes, size_t blocksize, uint32_t nblocks, co
 int SIFS_writefile(const char *volumename, const char *pathname,
 		   void *data, size_t nbytes)
 {
+    // CHECK NULL ARGUMENTS AND ALSO IF NO DATA PROVIDED OR NO BYTES REQUESTED
     if (volumename == NULL || pathname == NULL || data == NULL || nbytes <= 0)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    // CHECK IF VOLUMENAME IS VALID 
     if (!check_valid_volume(volumename))
     {
         return 1;
     }   
 
-    // ACCESS VOLUME INFORMATION
+    // ACCESS VOLUME HEADER INFORMATION
     uint32_t nblocks, nblocks_needed;
     size_t blocksize;
     int fileblockID, firstblockID;
@@ -106,6 +110,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fread(bitmap, sizeof(bitmap), 1, fp);
     bool isIdentical = false;
+    // CHECK ALL FILEBLOCKS
     for (int i = 0; i < nblocks; i++)
     {
         if (bitmap[i] == SIFS_FILE)
@@ -193,7 +198,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     dirblock.entries[dirblock.nentries].fileindex = fileblock.nfiles - 1; 
     dirblock.nentries++;
     
-    // WRITE PARENT DIRECTORY TO VOLUME
+    // WRITE PARENT DIRECTORY BLOCK TO VOLUME
     fseek_to_blockID(parent_blockID);
     fwrite(&dirblock, sizeof(dirblock), 1, fp);
 

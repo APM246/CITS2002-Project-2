@@ -1,14 +1,16 @@
 #include "helperfunctions.h"
-
+// comment 
 // remove an existing file from an existing volume
 int SIFS_rmfile(const char *volumename, const char *pathname)
 {
+    // CHECK NULL ARGUMENTS 
    if (volumename == NULL || pathname == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    // CHECK IF VOLUMENAME IS VALID 
     if (!check_valid_volume(volumename))
     {
         return 1;
@@ -21,21 +23,22 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
         return 1;
     }
 
-    // OBTAIN INFORMATION 
+    // ACCESS VOLUME HEADER INFORMATION
     FILE *fp = fopen(volumename, "r+");
     uint32_t nblocks;
     size_t blocksize;
     int blockID;
     get_volume_header_info(volumename, &blocksize, &nblocks);
+
+    // INVALID PATHNAME 
     if ((blockID = find_blockID(volumename, pathname, nblocks, blocksize)) == NO_SUCH_BLOCKID)
     {
         SIFS_errno = SIFS_ENOENT;
         return 1;
     } 
+
     char *name = find_name(pathname); 
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
-
-    // READ BITMAP
     char bitmap[nblocks];
     fread(bitmap, sizeof(bitmap), 1, fp);
     SIFS_BIT type = bitmap[blockID];
@@ -88,7 +91,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     }
     else
     {
-        // SORT FILENAMES ARRAY (shuffle down)
+        // SORT FILENAMES ARRAY (ELIMINATE GAPS)
         sort_filenames(fp, name, &fileblock, blockID, nblocks, blocksize);
         fileblock.nfiles--;
     }
@@ -127,3 +130,5 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     fclose(fp);
     return 0;
 }
+
+

@@ -3,16 +3,19 @@
 // remove an existing directory from an existing volume
 int SIFS_rmdir(const char *volumename, const char *pathname)
 {
+    // CHECK NULL ARGUMENTS 
     if (volumename == NULL || pathname == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    // CHECK IF VOLUMENAME IS VALID 
     if (!check_valid_volume(volumename))
     {
         return 1;
     }
+
     // THROW ERROR IF USER TRIES TO DELETE ROOT DIRECTORY
     if (strlen(pathname) == 1 && *pathname == '/')
     {
@@ -20,6 +23,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         return 1;
     }
 
+    // ACCESS VOLUME HEADER INFORMATION 
     FILE *fp = fopen(volumename, "r+");
     uint32_t nblocks;
     size_t blocksize;
@@ -56,19 +60,19 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         return 1;
     }
 
-    // change bitmap - REMOVE FIRST TWO LINES (?)
+    // CHANGE BITMAP, I.E. FROM 'D' TO 'U'
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fread(bitmap, sizeof(bitmap), 1, fp);
     bitmap[block_ID] = SIFS_UNUSED;
     fseek(fp, sizeof(SIFS_VOLUME_HEADER), SEEK_SET);
     fwrite(bitmap, sizeof(bitmap), 1, fp);
     
-    // clear directory block from volume 
+    // CLEAR DIRECTORY BLOCK FROM VOLUME  
     fseek_to_blockID(block_ID);
     memset(&dirblock, 0, sizeof(dirblock)); 
     fwrite(&dirblock, sizeof(dirblock), 1, fp);
 
-    // update 3 fields of parent directory 
+    // UPDATE PARENT DIRECTORY  
     SIFS_DIRBLOCK parentblock;
     int parent_blockID = find_parent_blockID(volumename, pathname, nblocks, blocksize); 
     fseek_to_blockID(parent_blockID);

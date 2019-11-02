@@ -14,6 +14,8 @@ void get_volume_header_info(const char *volumename, size_t *blocksize, uint32_t 
 
 // -----------------------------------------------------------------------
 
+// FIND FIRST UNUSED BLOCK AND CHANGE IT TO VARIABLE TYPE. MODIFIES INT *BLOCKID
+// TO INDICATE POSITION
 int change_bitmap(const char *volumename, char type, int *blockID, uint32_t nblocks)
 {
     FILE *fp = fopen(volumename, "r+");
@@ -39,7 +41,7 @@ int change_bitmap(const char *volumename, char type, int *blockID, uint32_t nblo
 
 // -------------------------------------------- PATHNAME 
 
-//  EXTRACT NAME (REMOVE SUPER DIRECTORIES FROM NAME)
+//  EXTRACT NAME (REMOVE SUPER DIRECTORIES FROM NAME). E.G. /A/B/C/D BECOMES D
 char *find_name(const char *pathname)
 {
     char *directory_name;
@@ -55,7 +57,8 @@ char *find_name(const char *pathname)
     }
 }
 
-// RETURNS 0 IF ARGUMENT IS "/NAME. FUNCTION IS DESIGNED TO BE USED WITH NON-ROOT ENTRIES  
+// RETURNS 0 IF ARGUMENT IS "/A. THIS SIFS IMPLEMENTATION DOES NOT CONSIDER THE STARTING
+// '/' (SKIPS PAST IT).  
 int get_number_of_slashes(const char* pathname)
 {
     char *path_name = malloc(strlen(pathname) + 1); 
@@ -79,12 +82,14 @@ int get_number_of_slashes(const char* pathname)
 
 // --------------------------------------------------------- blockID 
 
+// FIND BLOCKID OF PARENT DIRECTORY OF A PARTICULAR PATHNAME. RETURNS NO_SUCH_BLOCKID 
+// IF PATHNAME IS INVALID 
 int find_parent_blockID(const char *volumename, const char *pathname, uint32_t nblocks, size_t blocksize)
 {
     int max_iterations = get_number_of_slashes(pathname);
     if (max_iterations == 0) 
     {
-        return 0;
+        return 0; // pathname is equivalent to /a thus parent directory is root and has blockID 0
     }
     else if (max_iterations == MEMORY_ALLOCATION_FAILED) 
     {
@@ -113,6 +118,8 @@ int find_parent_blockID(const char *volumename, const char *pathname, uint32_t n
 
     path = strtok(path_name, delimiter);
 
+    // TRAVERSE THROUGH PATHNAME COMPONENTS, CALLING STRTOK() EACH TIME AND MAKING SURE
+    // COMPONENT EXISTS. IF COMPONENT DOES NOT EXIST RETURN NO_SUCH_BLOCKID
     do
     {
         fread(&parent_buffer, sizeof(parent_buffer), 1, fp);
@@ -147,7 +154,8 @@ int find_parent_blockID(const char *volumename, const char *pathname, uint32_t n
     return parent_blockID; 
 }
 
-// read bitmap through this function as well, add extra paramter 
+// FIND BLOCKID OF A DIRECTORY OR FILE REPRESENTED BY A PARTICULAR PATHNAME. RETURNS 
+// NO_SUCH_BLOCKID IF PATHNAME IS INVALID  
 int find_blockID(const char *volumename, const char *pathname, uint32_t nblocks, size_t blocksize)
 {
     char *directory_name = find_name(pathname);
@@ -171,6 +179,8 @@ int find_blockID(const char *volumename, const char *pathname, uint32_t nblocks,
         SIFS_BIT type = bitmap[entry_blockID];
         fseek_to_blockID(entry_blockID);
         
+        // TRAVERSE THROUGH PARENT DIRECTORY'S ENTRIES ARRAY, STOPPING WHEN THE ENTRY'S
+        // NAME MATCHES THE PATHNAME
         if (type == SIFS_DIR)
         {
             SIFS_DIRBLOCK entry_dirblock;
@@ -199,7 +209,7 @@ int find_blockID(const char *volumename, const char *pathname, uint32_t nblocks,
 
 // -------------------------------------------------------- FILEBLOCK 
 
-// FINDS FILEINDEX OF A PARTICULAR FILE 
+// FINDS FILEINDEX FOR A PARTICULAR NAME OF A FILE 
 int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)
 {
     uint32_t nfiles = fileblock->nfiles;
@@ -212,13 +222,13 @@ int find_fileindex(SIFS_FILEBLOCK *fileblock, char *name)
         }
     }
 
-    return NO_SUCH_FILENAME;  // check return value in caller 
+    return NO_SUCH_FILENAME;
 }
 
 /* 
-    WHEN THE FILENAMES ARRAY IS BEING SHUFFLED DOWN AFTER RMFILE() IS CALLED (TO ELIMINATE GAPS), 
-    THE FILEINDEX VALUES OF VARIOUS FILES MUST BE DECREMENTED (ONLY THE ONES BEING SHUFFLED DOWN)
-    E.G. IF NAME2 REMOVED FROM {NAME1, NAME2, NAME3} --> {NAME1, NAME3, ..}
+    WHEN RMFILE() IS CALLED, THE FILENAMES ARRAY MUST BE SHUFFLED DOWN TO ELIMINATE GAPS. THEREFORE
+    THE FILEINDEX VALUES OF VARIOUS FILES MUST BE DECREMENTED (ONLY THE ONES BEING SHUFFLED DOWN).
+    E.G. IF NAME2 REMOVED FROM {NAME1, NAME2, NAME3} --> {NAME1, NAME3, ..}.
     THE ENTRY IN THE ENTRIES ARRAY WHICH CORRESPONDS TO NAME3 MUST HAVE ITS FILEINDEX VALUE
     DECREMENTED 
 */
@@ -228,6 +238,7 @@ void decrement_fileindex(FILE *fp, int fileindex, int blockID, uint32_t nblocks,
     char bitmap[nblocks];
     fread(bitmap, nblocks, 1, fp);
 
+    // CHECK EACH DIRECTORY BLOCK'S ENTRIES ARRAY 
     for (int i = 0; i < nblocks; i++)
     {
         if (bitmap[i] == SIFS_DIR)
@@ -252,6 +263,7 @@ void decrement_fileindex(FILE *fp, int fileindex, int blockID, uint32_t nblocks,
     }
 }
 
+// WHEN RMFILE() IS CALLED, FILENAMES ARRAY MUST BE SHUFFLED DOWN TO ELIMINATE GAPS 
 void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, int blockID, uint32_t nblocks, size_t blocksize)
 {
     uint32_t nfiles = fileblock->nfiles; //value hasn't been decremented yet 
@@ -276,6 +288,7 @@ void sort_filenames(FILE *fp, char *filename, SIFS_FILEBLOCK *fileblock, int blo
 
 // ------------------------------------------------------------------- ERROR CHECKING
 
+// FIRST CHECKS IF VOLUMENAME REPRESENTS AN EXISTING FILE THEN CHECKS IF IT IS A VOLUME
 bool check_valid_volume(const char *volumename)
 {
     // NO SUCH VOLUME 

@@ -4,12 +4,14 @@
 int SIFS_readfile(const char *volumename, const char *pathname,
 		  void **data, size_t *nbytes)
 {
+   // CHECK NULL ARGUMENTS 
    if (volumename == NULL || pathname == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
+    // CHECK IF VOLUMENAME IS VALID 
     if (!check_valid_volume(volumename))
     {
         return 1;
